@@ -1,0 +1,220 @@
+---
+# Lab / builder setup. Do not become at play level — fact gathering would
+# require a sudo password on hosts like BUILD_PKG that are not NOPASSWD.
+- name: Setup simple-metricd development environment
+  hosts: all
+  become: false
+  vars:
+    project_dir: /opt/simple-metricd
+    project_name: simple-metricd
+    service_user: simple-metricd
+    service_group: simple-metricd
+    need_root: "{{ escalate | default(true) | bool }}"
+    git_repo_url: https://github.com/SimpleDaemons/simple-metricd.git
+    git_branch: main
+    build_type: Release
+    metric_cli_prefix: ""
+    install_prefix: /usr
+    run_tests: true
+    install_service: false
+    config_dir: /etc/simple-metricd
+    data_dir: /var/lib/simple-metricd
+    log_dir: /var/log/simple-metricd
+
+  tasks:
+    - name: Use a user-writable tree when sudo is disabled
+      set_fact:
+        project_dir: "{{ ansible_facts['env']['HOME'] | default('/tmp') }}/simple-metricd"
+      when: not (need_root | bool)
+
+    - name: Update package cache (Debian)
+      apt:
+        update_cache: true
+        cache_valid_time: 3600
+      become: "{{ need_root }}"
+      when:
+        - ansible_facts['os_family'] == "Debian"
+        - need_root | bool
+
+    - name: Install build dependencies (Debian)
+      apt:
+        name:
+          - build-essential
+          - cmake
+          - git
+          - pkg-config
+          - libssl-dev
+          - libsqlite3-dev
+          - libjsoncpp-dev
+          - python3
+          - python3-pip
+          - acl
+        state: present
+      become: "{{ need_root }}"
+      when:
+        - ansible_facts['os_family'] == "Debian"
+        - need_root | bool
+
+    - name: Install build dependencies (RedHat)
+      package:
+        name:
+          - gcc-c++
+          - cmake
+          - git
+          - pkgconfig
+          - openssl-devel
+          - sqlite-devel
+          - jsoncpp-devel
+          - python3
+          - python3-pip
+          - acl
+        state: present
+      become: "{{ need_root }}"
+      when:
+        - ansible_facts['os_family'] == "RedHat"
+        - need_root | bool
+
+    - name: Create service group
+      group:
+        name: "{{ service_group }}"
+        system: true
+        state: present
+      become: "{{ need_root }}"
+      when: need_root | bool
+
+    - name: Create service user
+      user:
+        name: "{{ service_user }}"
+        group: "{{ service_group }}"
+        system: true
+        shell: /bin/bash
+        home: "{{ data_dir }}"
+        create_home: false
+        comment: simple-metricd service and build user
+        state: present
+      become: "{{ need_root }}"
+      when: need_root | bool
+
+    - name: Create project directory
+      file:
+        path: "{{ project_dir }}"
+        state: directory
+        owner: "{{ service_user if (need_root | bool) else omit }}"
+        group: "{{ service_group if (need_root | bool) else omit }}"
+        mode: "0755"
+      become: "{{ need_root }}"
+
+    - name: Create runtime directories
+      file:
+        path: "{{ item.path }}"
+        state: directory
+        owner: "{{ item.owner }}"
+        group: "{{ service_group }}"
+        mode: "{{ item.mode }}"
+      become: "{{ need_root }}"
+      when: need_root | bool
+      loop:
+        - { path: "{{ config_dir }}", owner: root, mode: "0750" }
+        - { path: "{{ config_dir }}/tls", owner: root, mode: "0750" }
+        - { path: "{{ data_dir }}", owner: "{{ service_user }}", mode: "0750" }
+        - { path: "{{ log_dir }}", owner: "{{ service_user }}", mode: "0750" }
+
+    - name: Clone or update repository
+      git:
+        repo: "{{ git_repo_url }}"
+        dest: "{{ project_dir }}"
+        version: "{{ git_branch }}"
+        force: true
+        update: true
+      become: "{{ need_root }}"
+      register: git_result
+
+    - name: Create build directory
+      file:
+        path: "{{ project_dir }}/build"
+        state: directory
+        owner: "{{ service_user if (need_root | bool) else omit }}"
+        group: "{{ service_group if (need_root | bool) else omit }}"
+        mode: "0755"
+      become: "{{ need_root }}"
+
+    - name: Configure CMake
+      command: >
+        cmake ..
+        -DCMAKE_BUILD_TYPE={{ build_type }}
+        -DCMAKE_INSTALL_PREFIX={{ install_prefix }}
+        -DENABLE_TESTS={{ 'ON' if run_tests | bool else 'OFF' }}
+        -DENABLE_SSL=ON
+        -DENABLE_SQLITE=ON
+        -DMETRIC_CLI_PREFIX={{ metric_cli_prefix }}
+      args:
+        chdir: "{{ project_dir }}/build"
+      become: "{{ need_root }}"
+      register: cmake_result
+      changed_when: true
+
+    - name: Display CMake configuration
+      debug:
+        var: cmake_result.stdout_lines
+
+    - name: Build project
+      make:
+        chdir: "{{ project_dir }}/build"
+        target: all
+      become: "{{ need_root }}"
+
+    - name: Run tests
+      command: ctest --output-on-failure
+      args:
+        chdir: "{{ project_dir }}/build"
+      become: "{{ need_root }}"
+      register: test_result
+      failed_when: false
+      when: run_tests | bool
+
+    - name: Display test results
+      debug:
+        var: test_result.stdout_lines
+      when: run_tests | bool
+
+    - name: Install binaries and unit files
+      command: cmake --install "{{ project_dir }}/build"
+      become: "{{ need_root }}"
+      when:
+        - install_service | bool
+        - need_root | bool
+      notify: reload systemd
+
+    - name: Install production config if missing
+      copy:
+        src: "{{ project_dir }}/config/templates/production.conf"
+        dest: "{{ config_dir }}/simple-metricd.conf"
+        remote_src: true
+        owner: root
+        group: "{{ service_group }}"
+        mode: "0640"
+        force: false
+      become: "{{ need_root }}"
+      when:
+        - install_service | bool
+        - need_root | bool
+
+    - name: Install systemd unit from the tree
+      copy:
+        src: "{{ project_dir }}/deployment/systemd/simple-metricd.service"
+        dest: /etc/systemd/system/simple-metricd.service
+        remote_src: true
+        owner: root
+        group: root
+        mode: "0644"
+      become: "{{ need_root }}"
+      when:
+        - install_service | bool
+        - need_root | bool
+      notify: reload systemd
+
+  handlers:
+    - name: reload systemd
+      systemd:
+        daemon_reload: true
+      become: true

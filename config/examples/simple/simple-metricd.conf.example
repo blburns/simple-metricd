@@ -1,0 +1,5 @@
+# Example (simple) — v0.1.0 skeleton
+listen_address = 127.0.0.1
+listen_port = 19100
+log_level = info
+metric = simple_metricd_up gauge help=daemon process up

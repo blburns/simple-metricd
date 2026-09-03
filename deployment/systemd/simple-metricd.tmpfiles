@@ -1,0 +1,4 @@
+d /var/lib/simple-metricd 0750 simple-metricd simple-metricd -
+d /var/log/simple-metricd 0750 simple-metricd simple-metricd -
+d /etc/simple-metricd 0750 root simple-metricd -
+d /etc/simple-metricd/tls 0750 root simple-metricd -

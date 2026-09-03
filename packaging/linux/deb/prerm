@@ -1,0 +1,15 @@
+#!/bin/sh
+# Pre-removal for simple-metricd
+
+set -e
+
+PROJECT_NAME="simple-metricd"
+
+if [ "$1" = "remove" ] || [ "$1" = "deconfigure" ]; then
+    if command -v systemctl >/dev/null 2>&1; then
+        systemctl stop "$PROJECT_NAME" >/dev/null 2>&1 || true
+        systemctl disable "$PROJECT_NAME" >/dev/null 2>&1 || true
+    fi
+fi
+
+exit 0

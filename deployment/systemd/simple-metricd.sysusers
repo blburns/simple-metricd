@@ -1,0 +1,1 @@
+u simple-metricd - "simple-metricd service user" /var/lib/simple-metricd /usr/sbin/nologin

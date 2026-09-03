@@ -1,0 +1,11 @@
+Package: simple-metricd
+Version: ${VERSION}
+Section: net
+Priority: optional
+Architecture: amd64
+Depends: libssl3 (>= 3.0.0), libc6 (>= 2.31)
+Maintainer: SimpleDaemons <support@simpledaemons.com>
+Description: Lightweight health check daemon
+ simple-metricd watches configured HTTP/TCP endpoints, aggregates
+ results, and fires simple alert hooks. v0.1.0 is the skeleton.
+Homepage: https://github.com/SimpleDaemons/simple-metricd

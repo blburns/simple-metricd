@@ -1,0 +1,16 @@
+bin/simple-metricd
+bin/metricctl
+etc/simple-metricd/README.md
+etc/simple-metricd/templates/development.conf
+etc/simple-metricd/templates/production.conf
+etc/simple-metricd/templates/high-security.conf
+etc/simple-metricd/examples/simple/simple-metricd.conf.example
+etc/simple-metricd/examples/advanced/simple-metricd.conf.example
+etc/simple-metricd/examples/security/simple-metricd.conf.example
+etc/simple-metricd/examples/production/simple-metricd.conf.example
+@dir etc/simple-metricd/tls
+@dir var/lib/simple-metricd
+@dir var/log/simple-metricd
+share/doc/simple-metricd/LICENSE
+share/doc/simple-metricd/README.md
+share/doc/simple-metricd/CHANGELOG.md

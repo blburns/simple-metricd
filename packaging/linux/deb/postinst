@@ -1,0 +1,66 @@
+#!/bin/sh
+# Post-installation for simple-metricd (Debian/CPack). Non-interactive.
+
+set -e
+
+PROJECT_NAME="simple-metricd"
+SERVICE_USER="simple-metricd"
+CONFIG_DIR="/etc/$PROJECT_NAME"
+DATA_DIR="/var/lib/$PROJECT_NAME"
+LOG_DIR="/var/log/$PROJECT_NAME"
+
+nologin_shell() {
+    if [ -x /usr/sbin/nologin ]; then
+        echo /usr/sbin/nologin
+    elif [ -x /sbin/nologin ]; then
+        echo /sbin/nologin
+    else
+        echo /bin/false
+    fi
+}
+
+ensure_service_user() {
+    if ! getent group "$SERVICE_USER" >/dev/null 2>&1; then
+        groupadd --system "$SERVICE_USER" 2>/dev/null || groupadd -r "$SERVICE_USER"
+    fi
+    if ! getent passwd "$SERVICE_USER" >/dev/null 2>&1; then
+        useradd --system --no-create-home --home-dir "$DATA_DIR" \
+            --shell "$(nologin_shell)" --gid "$SERVICE_USER" \
+            --comment "$PROJECT_NAME service user" "$SERVICE_USER" 2>/dev/null || \
+        useradd -r -M -d "$DATA_DIR" -s "$(nologin_shell)" -g "$SERVICE_USER" \
+            -c "$PROJECT_NAME service user" "$SERVICE_USER"
+    fi
+}
+
+ensure_directories() {
+    mkdir -p "$CONFIG_DIR/tls" "$DATA_DIR" "$LOG_DIR"
+    chown root:"$SERVICE_USER" "$CONFIG_DIR" "$CONFIG_DIR/tls"
+    chmod 0750 "$CONFIG_DIR" "$CONFIG_DIR/tls"
+    chown "$SERVICE_USER:$SERVICE_USER" "$DATA_DIR" "$LOG_DIR"
+    chmod 0750 "$DATA_DIR" "$LOG_DIR"
+
+    if [ ! -f "$CONFIG_DIR/$PROJECT_NAME.conf" ] && [ -f "$CONFIG_DIR/templates/production.conf" ]; then
+        cp "$CONFIG_DIR/templates/production.conf" "$CONFIG_DIR/$PROJECT_NAME.conf"
+        chown root:"$SERVICE_USER" "$CONFIG_DIR/$PROJECT_NAME.conf"
+        chmod 0640 "$CONFIG_DIR/$PROJECT_NAME.conf"
+    elif [ -f "$CONFIG_DIR/$PROJECT_NAME.conf" ]; then
+        chown root:"$SERVICE_USER" "$CONFIG_DIR/$PROJECT_NAME.conf"
+        chmod 0640 "$CONFIG_DIR/$PROJECT_NAME.conf"
+    fi
+}
+
+if [ "$1" = "configure" ]; then
+    ensure_service_user
+    ensure_directories
+    if command -v systemd-sysusers >/dev/null 2>&1; then
+        systemd-sysusers "$PROJECT_NAME.conf" >/dev/null 2>&1 || true
+    fi
+    if command -v systemd-tmpfiles >/dev/null 2>&1; then
+        systemd-tmpfiles --create "/usr/lib/tmpfiles.d/$PROJECT_NAME.conf" >/dev/null 2>&1 || true
+    fi
+    if command -v systemctl >/dev/null 2>&1; then
+        systemctl daemon-reload >/dev/null 2>&1 || true
+    fi
+fi
+
+exit 0

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<pkg-info format-version="2" identifier="com.simpledaemons.simple-metricd" version="${VERSION}" install-location="/usr/local/bin" auth="root">
+    <payload installKBytes="${INSTALL_SIZE}" numberOfFiles="${FILE_COUNT}"/>
+    <bundle-version>
+        <bundle id="com.simpledaemons.simple-metricd" CFBundleIdentifier="com.simpledaemons.simple-metricd" path="simple-metricd" CFBundleVersion="${VERSION}"/>
+    </bundle-version>
+    <upgrade-bundle>
+        <bundle id="com.simpledaemons.simple-metricd" CFBundleVersion="0.0.0"/>
+    </upgrade-bundle>
+    <update-bundle/>
+    <atomic-update-bundle/>
+    <strict-identifier/>
+    <relocate>
+        <bundle id="com.simpledaemons.simple-metricd">/usr/local/bin</bundle>
+    </relocate>
+    <scripts>
+        <postinstall file="./scripts/postinstall"/>
+    </scripts>
+</pkg-info>
+

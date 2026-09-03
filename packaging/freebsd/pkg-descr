@@ -1,0 +1,5 @@
+simple-metricd is a lightweight health check daemon. It watches
+configured HTTP/TCP endpoints, aggregates results, and fires simple
+alert hooks. v0.1.0 is the skeleton (build, packaging, check stubs).
+
+WWW: https://github.com/SimpleDaemons/simple-metricd

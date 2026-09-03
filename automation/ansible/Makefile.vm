@@ -1,0 +1,50 @@
+# Makefile for Vagrant VM operations
+# Usage: make -f automation/ansible/Makefile.vm <target>
+# Run from the project root.
+
+.PHONY: vm-up vm-down vm-ssh vm-build vm-test vm-status vm-logs vm-clean vm-install vm-setup vm-dev collect-packages
+
+VM_SCRIPTS := automation/ansible/scripts
+
+vm-up:
+	cd automation/vagrant && vagrant up
+
+vm-down:
+	cd automation/vagrant && vagrant halt
+
+vm-ssh:
+	$(VM_SCRIPTS)/vm-ssh
+
+vm-build:
+	$(VM_SCRIPTS)/vm-build
+
+vm-clean:
+	$(VM_SCRIPTS)/vm-build ubuntu_dev clean
+
+vm-test:
+	$(VM_SCRIPTS)/vm-test
+
+vm-test-filter:
+	$(VM_SCRIPTS)/vm-test ubuntu_dev $(FILTER)
+
+vm-status:
+	$(VM_SCRIPTS)/vm-build ubuntu_dev status
+
+vm-logs:
+	$(VM_SCRIPTS)/vm-build ubuntu_dev logs
+
+vm-install:
+	$(VM_SCRIPTS)/vm-build ubuntu_dev install
+
+vm-setup: vm-up vm-build vm-test vm-install
+
+vm-dev: vm-build vm-test vm-install
+
+collect-packages:
+	$(VM_SCRIPTS)/collect-packages.sh
+
+vm-test-box:
+	cd automation/vagrant && VAGRANT_BOX=$(BOX) vagrant up
+	VAGRANT_BOX=$(BOX) $(VM_SCRIPTS)/vm-build
+	VAGRANT_BOX=$(BOX) $(VM_SCRIPTS)/vm-test
+	cd automation/vagrant && VAGRANT_BOX=$(BOX) vagrant destroy -f
