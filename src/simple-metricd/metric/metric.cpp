@@ -23,6 +23,7 @@ class CounterMetric : public Metric {
 public:
   explicit CounterMetric(MetricSpec spec)
       : name_(std::move(spec.name)), help_(std::move(spec.help)),
+        labels_(std::move(spec.labels)),
         value_(spec.value < 0.0 ? 0.0 : spec.value) {}
 
   std::string name() const override { return name_; }
@@ -42,10 +43,13 @@ public:
     value_ = value;
     return true;
   }
+  std::string help() const override { return help_; }
+  std::string labels() const override { return labels_; }
 
 private:
   std::string name_;
   std::string help_;
+  std::string labels_;
   mutable std::mutex mutex_;
   double value_{0.0};
 };
@@ -53,7 +57,8 @@ private:
 class GaugeMetric : public Metric {
 public:
   explicit GaugeMetric(MetricSpec spec)
-      : name_(std::move(spec.name)), help_(std::move(spec.help)), value_(spec.value) {}
+      : name_(std::move(spec.name)), help_(std::move(spec.help)),
+        labels_(std::move(spec.labels)), value_(spec.value) {}
 
   std::string name() const override { return name_; }
   MetricType type() const override { return MetricType::Gauge; }
@@ -69,10 +74,13 @@ public:
     value_ = value;
     return true;
   }
+  std::string help() const override { return help_; }
+  std::string labels() const override { return labels_; }
 
 private:
   std::string name_;
   std::string help_;
+  std::string labels_;
   mutable std::mutex mutex_;
   double value_{0.0};
 };

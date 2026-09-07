@@ -1,0 +1,43 @@
+/**
+ * @file metrics_server.hpp
+ * @brief HTTP metrics/health endpoints
+ */
+
+#pragma once
+
+#include "simple-metricd/metric/registry.hpp"
+#include "simple-metricd/utils/net.hpp"
+#include "simple-metricd/utils/platform.hpp"
+#include <atomic>
+#include <string>
+#include <thread>
+
+namespace simple_metricd {
+
+class MetricsServer {
+public:
+  MetricsServer(std::string listen_address, port_t listen_port, MetricRegistry &registry);
+  ~MetricsServer();
+
+  MetricsServer(const MetricsServer &) = delete;
+  MetricsServer &operator=(const MetricsServer &) = delete;
+
+  bool start();
+  void stop();
+  port_t boundPort() const { return bound_port_; }
+  bool running() const { return running_.load(); }
+
+private:
+  void acceptLoop();
+  void handleClient(TcpConnection connection);
+
+  std::string listen_address_;
+  port_t listen_port_{0};
+  MetricRegistry &registry_;
+  TcpListener listener_;
+  std::atomic<bool> running_{false};
+  std::thread thread_;
+  port_t bound_port_{0};
+};
+
+}  // namespace simple_metricd

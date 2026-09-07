@@ -5,6 +5,7 @@
 #pragma once
 
 #include "simple-metricd/config/config.hpp"
+#include "simple-metricd/http/metrics_server.hpp"
 #include "simple-metricd/metric/metric.hpp"
 #include "simple-metricd/metric/registry.hpp"
 #include <atomic>
@@ -29,10 +30,12 @@ public:
   const MetricConfig &config() const { return config_; }
   MetricRegistry &registry() { return registry_; }
   const MetricRegistry &registry() const { return registry_; }
+  port_t boundPort() const;
 
 private:
   MetricConfig config_;
   MetricRegistry registry_;
+  std::unique_ptr<MetricsServer> server_;
   std::atomic<bool> running_{false};
   std::atomic<bool> initialized_{false};
 };

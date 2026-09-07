@@ -1,0 +1,99 @@
+/**
+ * @file metrics_server.cpp
+ */
+
+#include "simple-metricd/http/metrics_server.hpp"
+
+#include "simple-metricd/http/exposition.hpp"
+#include "simple-metricd/version.hpp"
+#include <sstream>
+
+namespace simple_metricd {
+
+MetricsServer::MetricsServer(std::string listen_address, port_t listen_port,
+                             MetricRegistry &registry)
+    : listen_address_(std::move(listen_address)), listen_port_(listen_port),
+      registry_(registry) {}
+
+MetricsServer::~MetricsServer() { stop(); }
+
+bool MetricsServer::start() {
+  if (!listener_.bindAndListen(listen_address_, listen_port_)) {
+    return false;
+  }
+  bound_port_ = listener_.boundPort() ? listener_.boundPort() : listen_port_;
+  running_ = true;
+  thread_ = std::thread([this]() { acceptLoop(); });
+  return true;
+}
+
+void MetricsServer::stop() {
+  running_ = false;
+  listener_.close();
+  if (thread_.joinable()) {
+    thread_.join();
+  }
+}
+
+void MetricsServer::acceptLoop() {
+  while (running_) {
+    auto conn = listener_.acceptConnection(500);
+    if (!conn) {
+      continue;
+    }
+    handleClient(std::move(*conn));
+  }
+}
+
+void MetricsServer::handleClient(TcpConnection connection) {
+  std::string line;
+  if (!connection.recvLine(line, 5000)) {
+    return;
+  }
+  std::istringstream req(line);
+  std::string method;
+  std::string path;
+  std::string http;
+  req >> method >> path >> http;
+  while (connection.recvLine(line, 2000) && !line.empty()) {
+  }
+
+  std::string body;
+  std::string content_type = "text/plain; version=0.0.4";
+  int code = 200;
+  const std::string path_only = path.substr(0, path.find('?'));
+
+  if (method != "GET") {
+    body = "method not allowed\n";
+    code = 405;
+  } else if (path_only == "/metrics" || path_only == "/metrics/") {
+    body = renderPrometheusText(registry_, true);
+  } else if (path_only == "/healthz" || path_only == "/healthz/") {
+    body = "ok\n";
+  } else if (path_only == "/status" || path_only == "/status/") {
+    content_type = "application/json";
+    std::ostringstream json;
+    json << "{\"version\":\"" << kVersion << "\",\"metrics\":" << registry_.size()
+         << ",\"port\":" << bound_port_ << "}";
+    body = json.str();
+  } else {
+    body = "not found\n";
+    code = 404;
+  }
+
+  std::ostringstream resp;
+  resp << "HTTP/1.1 " << code;
+  if (code == 200) {
+    resp << " OK";
+  } else if (code == 405) {
+    resp << " Method Not Allowed";
+  } else {
+    resp << " Not Found";
+  }
+  resp << "\r\nContent-Length: " << body.size() << "\r\nContent-Type: " << content_type
+       << "\r\nConnection: close\r\n\r\n"
+       << body;
+  connection.sendAll(resp.str());
+}
+
+}  // namespace simple_metricd
