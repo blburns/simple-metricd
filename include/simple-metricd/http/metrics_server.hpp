@@ -7,10 +7,12 @@
 
 #include "simple-metricd/metric/registry.hpp"
 #include "simple-metricd/security/acl.hpp"
+#include "simple-metricd/security/rate_limiter.hpp"
 #include "simple-metricd/security/tls.hpp"
 #include "simple-metricd/utils/net.hpp"
 #include "simple-metricd/utils/platform.hpp"
 #include <atomic>
+#include <cstdint>
 #include <string>
 #include <thread>
 
@@ -26,6 +28,7 @@ public:
 
   void setTls(TlsContext *tls) { tls_ = tls; }
   void setAcl(const AclPolicy &acl) { acl_ = acl; }
+  void setRateLimit(std::uint32_t max_per_minute) { rate_limiter_.setMaxPerMinute(max_per_minute); }
 
   bool start();
   void stop();
@@ -41,6 +44,7 @@ private:
   MetricRegistry &registry_;
   TlsContext *tls_{nullptr};
   AclPolicy acl_;
+  RateLimiter rate_limiter_;
   TcpListener listener_;
   std::atomic<bool> running_{false};
   std::thread thread_;

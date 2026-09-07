@@ -268,6 +268,10 @@ bool MetricConfig::loadFromFile(const std::string &path) {
       auth_password = value;
     } else if (key == "public_healthz") {
       public_healthz = parseBool(value);
+    } else if (key == "rate_limit_per_minute" || key == "api_rate_limit") {
+      rate_limit_per_minute = static_cast<std::uint32_t>(std::stoul(value));
+    } else if (key == "run_as_user" || key == "user") {
+      run_as_user = value;
     } else if (key == "metric") {
       MetricSpec spec;
       std::string error;

@@ -121,6 +121,15 @@ void MetricsServer::handleClient(TcpConnection connection) {
     connection.sendAll(resp.str());
     return;
   }
+  if (!rate_limiter_.allow(connection.peer())) {
+    const std::string body = "rate limit exceeded\n";
+    std::ostringstream resp;
+    resp << "HTTP/1.1 429 Too Many Requests\r\nContent-Length: " << body.size()
+         << "\r\nContent-Type: text/plain\r\nConnection: close\r\n\r\n"
+         << body;
+    connection.sendAll(resp.str());
+    return;
+  }
 
   std::string body;
   std::string content_type = "text/plain; version=0.0.4";

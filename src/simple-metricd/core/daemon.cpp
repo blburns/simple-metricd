@@ -7,6 +7,7 @@
 #include "simple-metricd/security/acl.hpp"
 #include "simple-metricd/utils/logger.hpp"
 #include "simple-metricd/utils/net.hpp"
+#include "simple-metricd/utils/privilege.hpp"
 #include "simple-metricd/version.hpp"
 
 namespace simple_metricd {
@@ -78,9 +79,16 @@ bool MetricDaemon::start() {
   acl.setCredentials(config_.auth_user, config_.auth_password);
   acl.setPublicHealthz(config_.public_healthz);
   server_->setAcl(acl);
+  server_->setRateLimit(config_.rate_limit_per_minute);
   if (!server_->start()) {
     Logger::instance().error("failed to bind metrics HTTP listener on " + config_.listen_address +
                              ":" + std::to_string(config_.listen_port));
+    server_.reset();
+    return false;
+  }
+  if (!dropPrivileges(config_.run_as_user)) {
+    Logger::instance().error("failed to drop privileges to user: " + config_.run_as_user);
+    server_->stop();
     server_.reset();
     return false;
   }

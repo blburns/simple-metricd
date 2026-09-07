@@ -6,6 +6,7 @@
 
 #include "simple-metricd/metric/metric.hpp"
 #include "simple-metricd/utils/platform.hpp"
+#include <cstdint>
 #include <string>
 #include <vector>
 
@@ -53,6 +54,10 @@ public:
   std::string auth_user;
   std::string auth_password;
   bool public_healthz{true};
+
+  // Hardening (Milestone 12)
+  std::uint32_t rate_limit_per_minute{0};  // 0 = disabled
+  std::string run_as_user;
 };
 
 }  // namespace simple_metricd
