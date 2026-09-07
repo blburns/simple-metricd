@@ -4,6 +4,7 @@
 
 #include "simple-metricd/core/daemon.hpp"
 
+#include "simple-metricd/security/acl.hpp"
 #include "simple-metricd/utils/logger.hpp"
 #include "simple-metricd/utils/net.hpp"
 #include "simple-metricd/version.hpp"
@@ -36,6 +37,16 @@ bool MetricDaemon::initialize() {
       return false;
     }
   }
+  if (config_.tls_enabled()) {
+    if (!tls_.loadCertificate(config_.tls_cert_file, config_.tls_key_file)) {
+      Logger::instance().error("failed to load TLS certificate/key");
+      return false;
+    }
+    if (!config_.tls_ca_file.empty() && !tls_.loadCa(config_.tls_ca_file)) {
+      Logger::instance().error("failed to load TLS CA file");
+      return false;
+    }
+  }
   initialized_ = true;
   return true;
 }
@@ -49,6 +60,15 @@ bool MetricDaemon::start() {
     return false;
   }
   server_ = std::make_unique<MetricsServer>(config_.listen_address, config_.listen_port, registry_);
+  if (tls_.enabled()) {
+    server_->setTls(&tls_);
+  }
+  AclPolicy acl;
+  acl.setAllow(config_.allow_ips);
+  acl.setDeny(config_.deny_ips);
+  acl.setCredentials(config_.auth_user, config_.auth_password);
+  acl.setPublicHealthz(config_.public_healthz);
+  server_->setAcl(acl);
   if (!server_->start()) {
     Logger::instance().error("failed to bind metrics HTTP listener on " + config_.listen_address +
                              ":" + std::to_string(config_.listen_port));
@@ -58,8 +78,9 @@ bool MetricDaemon::start() {
   running_ = true;
   Logger::instance().info(std::string(kProjectName) + " " + kVersion + " started");
   Logger::instance().info("metrics registered: " + std::to_string(registry_.size()));
-  Logger::instance().info("listening on " + config_.listen_address + ":" +
-                          std::to_string(server_->boundPort()) + " (/metrics /healthz /status)");
+  Logger::instance().info(std::string("listening on ") + (tls_.enabled() ? "https://" : "http://") +
+                          config_.listen_address + ":" + std::to_string(server_->boundPort()) +
+                          " (/metrics /healthz /status)");
   return true;
 }
 

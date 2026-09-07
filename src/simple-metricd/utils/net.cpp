@@ -6,6 +6,10 @@
 #include "simple-metricd/utils/net.hpp"
 #include "simple-metricd/security/tls.hpp"
 
+#ifdef SIMPLE_METRICD_SSL
+#include <openssl/ssl.h>
+#endif
+
 #ifndef SIMPLE_METRICD_WINDOWS
 #include <arpa/inet.h>
 #include <fcntl.h>
@@ -114,18 +118,60 @@ TcpConnection::~TcpConnection() { close(); }
 bool TcpConnection::valid() const { return fd_ != INVALID_SOCKET_VALUE; }
 
 void TcpConnection::close() {
+#ifdef SIMPLE_METRICD_SSL
+  if (ssl_) {
+    SSL_shutdown(static_cast<SSL *>(ssl_));
+    SSL_free(static_cast<SSL *>(ssl_));
+    ssl_ = nullptr;
+  }
+#endif
   if (fd_ != INVALID_SOCKET_VALUE) {
     CLOSE_SOCKET(fd_);
     fd_ = INVALID_SOCKET_VALUE;
   }
-  ssl_ = nullptr;
 }
 
-bool TcpConnection::handshakeTls(const TlsContext &, bool) {
+bool TcpConnection::handshakeTls(const TlsContext &ctx, bool server) {
+#ifdef SIMPLE_METRICD_SSL
+  ssl_ctx_st *c = server ? ctx.serverContext() : ctx.clientContext();
+  if (!c) {
+    return false;
+  }
+  ssl_ = SSL_new(c);
+  if (!ssl_) {
+    return false;
+  }
+  SSL_set_fd(static_cast<SSL *>(ssl_), static_cast<int>(fd_));
+  for (;;) {
+    const int rc = server ? SSL_accept(static_cast<SSL *>(ssl_))
+                          : SSL_connect(static_cast<SSL *>(ssl_));
+    if (rc == 1) {
+      return true;
+    }
+    const int err = SSL_get_error(static_cast<SSL *>(ssl_), rc);
+    if (err == SSL_ERROR_WANT_READ && waitReadable(fd_, 5000)) {
+      continue;
+    }
+    if (err == SSL_ERROR_WANT_WRITE) {
+      continue;
+    }
+    close();
+    return false;
+  }
+#else
+  (void)ctx;
+  (void)server;
   return false;
+#endif
 }
 
 bool TcpConnection::sendAll(const std::string &data) {
+#ifdef SIMPLE_METRICD_SSL
+  if (ssl_) {
+    const int n = SSL_write(static_cast<SSL *>(ssl_), data.data(), static_cast<int>(data.size()));
+    return n == static_cast<int>(data.size());
+  }
+#endif
   return sendBytes(fd_, data.data(), data.size());
 }
 
@@ -136,7 +182,12 @@ bool TcpConnection::recvLine(std::string &line, int timeout_ms) {
     if (!waitReadable(fd_, timeout_ms)) {
       return false;
     }
-    const int n = static_cast<int>(::recv(fd_, &ch, 1, 0));
+#ifdef SIMPLE_METRICD_SSL
+    int n = ssl_ ? SSL_read(static_cast<SSL *>(ssl_), &ch, 1)
+                 : static_cast<int>(::recv(fd_, &ch, 1, 0));
+#else
+    int n = static_cast<int>(::recv(fd_, &ch, 1, 0));
+#endif
     if (n <= 0) {
       return false;
     }
@@ -156,7 +207,12 @@ bool TcpConnection::recvAvailable(std::string &data, int timeout_ms, std::size_t
     return false;
   }
   char buf[4096];
+#ifdef SIMPLE_METRICD_SSL
+  const int n = ssl_ ? SSL_read(static_cast<SSL *>(ssl_), buf, sizeof(buf))
+                     : static_cast<int>(::recv(fd_, buf, sizeof(buf), 0));
+#else
   const int n = static_cast<int>(::recv(fd_, buf, sizeof(buf), 0));
+#endif
   if (n <= 0) {
     return false;
   }

@@ -6,6 +6,7 @@
 
 #include "simple-metricd/http/exposition.hpp"
 #include "simple-metricd/version.hpp"
+#include <cctype>
 #include <sstream>
 
 namespace simple_metricd {
@@ -41,6 +42,11 @@ void MetricsServer::acceptLoop() {
     if (!conn) {
       continue;
     }
+    if (tls_ && tls_->enabled()) {
+      if (!conn->handshakeTls(*tls_, true)) {
+        continue;
+      }
+    }
     handleClient(std::move(*conn));
   }
 }
@@ -55,13 +61,40 @@ void MetricsServer::handleClient(TcpConnection connection) {
   std::string path;
   std::string http;
   req >> method >> path >> http;
+
+  std::string authorization;
   while (connection.recvLine(line, 2000) && !line.empty()) {
+    const auto colon = line.find(':');
+    if (colon == std::string::npos) {
+      continue;
+    }
+    std::string key = line.substr(0, colon);
+    for (char &ch : key) {
+      ch = static_cast<char>(std::tolower(static_cast<unsigned char>(ch)));
+    }
+    if (key == "authorization") {
+      authorization = line.substr(colon + 1);
+      while (!authorization.empty() &&
+             std::isspace(static_cast<unsigned char>(authorization.front()))) {
+        authorization.erase(authorization.begin());
+      }
+    }
+  }
+
+  const std::string path_only = path.substr(0, path.find('?'));
+  if (!acl_.allow(connection.peer(), path_only, authorization)) {
+    const std::string body = "forbidden\n";
+    std::ostringstream resp;
+    resp << "HTTP/1.1 403 Forbidden\r\nContent-Length: " << body.size()
+         << "\r\nContent-Type: text/plain\r\nConnection: close\r\n\r\n"
+         << body;
+    connection.sendAll(resp.str());
+    return;
   }
 
   std::string body;
   std::string content_type = "text/plain; version=0.0.4";
   int code = 200;
-  const std::string path_only = path.substr(0, path.find('?'));
 
   if (method != "GET") {
     body = "method not allowed\n";

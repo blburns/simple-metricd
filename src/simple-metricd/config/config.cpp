@@ -28,6 +28,19 @@ bool parseBool(const std::string &value) {
   return lower == "1" || lower == "true" || lower == "yes" || lower == "on";
 }
 
+std::vector<std::string> splitList(const std::string &value) {
+  std::vector<std::string> out;
+  std::string token;
+  std::istringstream in(value);
+  while (std::getline(in, token, ',')) {
+    token = trim(token);
+    if (!token.empty()) {
+      out.push_back(token);
+    }
+  }
+  return out;
+}
+
 bool parseMetricLine(const std::string &value, MetricSpec &spec, std::string &error) {
   std::istringstream in(value);
   if (!(in >> spec.name >> spec.type)) {
@@ -146,6 +159,22 @@ bool MetricConfig::loadFromFile(const std::string &path) {
       log_level = value;
     } else if (key == "foreground") {
       foreground = parseBool(value);
+    } else if (key == "tls_cert_file" || key == "tls_cert") {
+      tls_cert_file = value;
+    } else if (key == "tls_key_file" || key == "tls_key") {
+      tls_key_file = value;
+    } else if (key == "tls_ca_file" || key == "tls_ca") {
+      tls_ca_file = value;
+    } else if (key == "allow_ip" || key == "allow_ips") {
+      allow_ips = splitList(value);
+    } else if (key == "deny_ip" || key == "deny_ips") {
+      deny_ips = splitList(value);
+    } else if (key == "auth_user") {
+      auth_user = value;
+    } else if (key == "auth_password") {
+      auth_password = value;
+    } else if (key == "public_healthz") {
+      public_healthz = parseBool(value);
     } else if (key == "metric") {
       MetricSpec spec;
       std::string error;
@@ -175,6 +204,12 @@ bool MetricConfig::validateDetailed(std::vector<std::string> &errors) const {
   }
   for (const auto &error : metric_errors) {
     errors.push_back(error);
+  }
+  if (tls_cert_file.empty() != tls_key_file.empty()) {
+    errors.emplace_back("tls_cert_file and tls_key_file must both be set");
+  }
+  if (!auth_user.empty() && auth_password.empty()) {
+    errors.emplace_back("auth_password is required when auth_user is set");
   }
   return errors.empty();
 }

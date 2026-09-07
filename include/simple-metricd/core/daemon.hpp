@@ -8,6 +8,7 @@
 #include "simple-metricd/http/metrics_server.hpp"
 #include "simple-metricd/metric/metric.hpp"
 #include "simple-metricd/metric/registry.hpp"
+#include "simple-metricd/security/tls.hpp"
 #include <atomic>
 #include <memory>
 
@@ -35,6 +36,7 @@ public:
 private:
   MetricConfig config_;
   MetricRegistry registry_;
+  TlsContext tls_;
   std::unique_ptr<MetricsServer> server_;
   std::atomic<bool> running_{false};
   std::atomic<bool> initialized_{false};

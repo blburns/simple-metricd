@@ -11,7 +11,7 @@
 
 namespace simple_metricd {
 
-class MetricConfig {
+struct MetricConfig {
 public:
   MetricConfig();
 
@@ -26,6 +26,19 @@ public:
   bool foreground{true};
   std::vector<MetricSpec> metrics;
   std::vector<std::string> metric_errors;
+
+  // TLS (Milestone 5)
+  std::string tls_cert_file;
+  std::string tls_key_file;
+  std::string tls_ca_file;
+  bool tls_enabled() const { return !tls_cert_file.empty() && !tls_key_file.empty(); }
+
+  // Early ACL / optional auth (pulled forward from Milestone 11)
+  std::vector<std::string> allow_ips;
+  std::vector<std::string> deny_ips;
+  std::string auth_user;
+  std::string auth_password;
+  bool public_healthz{true};
 };
 
 }  // namespace simple_metricd

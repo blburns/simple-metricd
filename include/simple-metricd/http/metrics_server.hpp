@@ -6,6 +6,8 @@
 #pragma once
 
 #include "simple-metricd/metric/registry.hpp"
+#include "simple-metricd/security/acl.hpp"
+#include "simple-metricd/security/tls.hpp"
 #include "simple-metricd/utils/net.hpp"
 #include "simple-metricd/utils/platform.hpp"
 #include <atomic>
@@ -22,6 +24,9 @@ public:
   MetricsServer(const MetricsServer &) = delete;
   MetricsServer &operator=(const MetricsServer &) = delete;
 
+  void setTls(TlsContext *tls) { tls_ = tls; }
+  void setAcl(const AclPolicy &acl) { acl_ = acl; }
+
   bool start();
   void stop();
   port_t boundPort() const { return bound_port_; }
@@ -34,6 +39,8 @@ private:
   std::string listen_address_;
   port_t listen_port_{0};
   MetricRegistry &registry_;
+  TlsContext *tls_{nullptr};
+  AclPolicy acl_;
   TcpListener listener_;
   std::atomic<bool> running_{false};
   std::thread thread_;
