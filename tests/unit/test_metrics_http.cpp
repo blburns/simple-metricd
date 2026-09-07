@@ -44,7 +44,7 @@ void testExpositionText() {
 void testHttpSmoke() {
   MetricConfig config;
   config.listen_address = "127.0.0.1";
-  config.listen_port = 19191;
+  config.listen_port = 19201;
   config.metrics.push_back(MetricSpec{"simple_metricd_up", "gauge", "up", 1.0, {}});
   config.metrics.push_back(MetricSpec{"requests_total", "counter", "requests", 2.0, {}});
 
@@ -54,7 +54,7 @@ void testHttpSmoke() {
     return;
   }
   const port_t port = daemon.boundPort();
-  expect(port == 19191, "bound listen port");
+  expect(port == 19201, "bound listen port");
 
   // Allow accept thread to start.
   std::this_thread::sleep_for(std::chrono::milliseconds(50));
