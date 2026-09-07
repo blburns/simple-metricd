@@ -47,6 +47,7 @@ public:
   bool sendAll(const std::string &data);
   bool recvLine(std::string &line, int timeout_ms);
   bool recvAvailable(std::string &data, int timeout_ms, std::size_t max_bytes);
+  bool recvExact(std::string &data, std::size_t bytes, int timeout_ms);
 
 private:
   socket_t fd_{INVALID_SOCKET_VALUE};
@@ -75,5 +76,7 @@ private:
 
 HttpResponse httpGet(const std::string &host, port_t port, const std::string &path,
                      int timeout_ms);
+HttpResponse httpPost(const std::string &host, port_t port, const std::string &path,
+                      const std::string &body, int timeout_ms);
 
 }  // namespace simple_metricd

@@ -23,6 +23,7 @@
 
 #include <cerrno>
 #include <cstring>
+#include <algorithm>
 #include <sstream>
 
 namespace simple_metricd {
@@ -220,6 +221,24 @@ bool TcpConnection::recvAvailable(std::string &data, int timeout_ms, std::size_t
   return data.size() <= max_bytes;
 }
 
+bool TcpConnection::recvExact(std::string &data, std::size_t bytes, int timeout_ms) {
+  data.clear();
+  data.reserve(bytes);
+  while (data.size() < bytes) {
+    if (!waitReadable(fd_, timeout_ms)) {
+      return false;
+    }
+    char buf[4096];
+    const std::size_t want = std::min(sizeof(buf), bytes - data.size());
+    const int n = static_cast<int>(::recv(fd_, buf, static_cast<int>(want), 0));
+    if (n <= 0) {
+      return false;
+    }
+    data.append(buf, static_cast<size_t>(n));
+  }
+  return true;
+}
+
 TcpListener::~TcpListener() { close(); }
 
 bool TcpListener::bindAndListen(const std::string &address, port_t port) {
@@ -349,6 +368,63 @@ HttpResponse httpGet(const std::string &host, port_t port, const std::string &pa
   while (conn.recvAvailable(body, timeout_ms, 1024 * 1024)) {
   }
   out.body = std::move(body);
+  return out;
+}
+
+HttpResponse httpPost(const std::string &host, port_t port, const std::string &path,
+                      const std::string &body, int timeout_ms) {
+  HttpResponse out;
+  addrinfo hints{};
+  hints.ai_family = AF_UNSPEC;
+  hints.ai_socktype = SOCK_STREAM;
+  addrinfo *res = nullptr;
+  if (getaddrinfo(host.c_str(), std::to_string(port).c_str(), &hints, &res) != 0 || !res) {
+    out.error = "resolve failed";
+    return out;
+  }
+  socket_t fd = INVALID_SOCKET_VALUE;
+  for (addrinfo *p = res; p; p = p->ai_next) {
+    fd = ::socket(p->ai_family, p->ai_socktype, p->ai_protocol);
+    if (fd == INVALID_SOCKET_VALUE) {
+      continue;
+    }
+    if (::connect(fd, p->ai_addr, static_cast<int>(p->ai_addrlen)) == 0) {
+      break;
+    }
+    CLOSE_SOCKET(fd);
+    fd = INVALID_SOCKET_VALUE;
+  }
+  freeaddrinfo(res);
+  if (fd == INVALID_SOCKET_VALUE) {
+    out.error = "connect failed";
+    return out;
+  }
+  TcpConnection conn(fd, host);
+  std::ostringstream req;
+  req << "POST " << (path.empty() ? "/" : path) << " HTTP/1.1\r\nHost: " << host
+      << "\r\nContent-Type: text/plain\r\nContent-Length: " << body.size()
+      << "\r\nConnection: close\r\n\r\n"
+      << body;
+  if (!conn.sendAll(req.str())) {
+    out.error = "send failed";
+    return out;
+  }
+  std::string line;
+  if (!conn.recvLine(line, timeout_ms) || line.rfind("HTTP/", 0) != 0) {
+    out.error = "bad status line";
+    return out;
+  }
+  {
+    std::istringstream st(line);
+    std::string http;
+    st >> http >> out.status;
+  }
+  while (conn.recvLine(line, timeout_ms) && !line.empty()) {
+  }
+  std::string resp_body;
+  while (conn.recvAvailable(resp_body, timeout_ms, 1024 * 1024)) {
+  }
+  out.body = std::move(resp_body);
   return out;
 }
 
