@@ -10,6 +10,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/) (see [VER
 ### Added
 - (none yet)
 
+## [0.2.0] — 2026-09-07
+
+### Added
+- In-memory `MetricRegistry` for counter and gauge registration
+- Mutable counter (non-decreasing) and gauge metric implementations
+- Daemon loads configured metrics into the registry on initialize
+- `metricctl list` prints registered name, type, and live value
+- Unit tests for registry register/update semantics
+
 ## [0.1.0] — 2026-09-02
 
 ### Added

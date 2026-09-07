@@ -12,9 +12,9 @@
 
 ## Milestone 2 — Registry — v0.2.0
 
-- In-memory counter and gauge registry
-- Register and update metric values
-- `metricctl list` showing configured and registered metrics
+- [x] In-memory counter and gauge registry
+- [x] Register and update metric values
+- [x] `metricctl list` showing configured and registered metrics
 
 ## Milestone 3 — Exposition — v0.3.0
 

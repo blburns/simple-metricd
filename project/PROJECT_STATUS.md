@@ -2,10 +2,10 @@
 
 | Field | Value |
 |-------|-------|
-| Product version | **0.1.0** |
-| Maturity | Early development / skeleton |
-| Last milestone | 1 — Skeleton |
-| Next milestone | 2 — Registry |
+| Product version | **0.2.0** |
+| Maturity | Early development — registry complete |
+| Last milestone | 2 — Registry |
+| Next milestone | 3 — Exposition (`/metrics`) |
 | Primary docs | [PROGRESS_REPORT.md](PROGRESS_REPORT.md), [ROADMAP_CHECKLIST.md](ROADMAP_CHECKLIST.md) |
 
-Honesty: packaging and CI scaffolding exist; protocol features are not started beyond config stubs.
+Honesty: registry and mutable metrics work; HTTP exposition is not started.

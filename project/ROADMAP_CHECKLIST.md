@@ -1,7 +1,7 @@
 # simple-metricd — Roadmap Checklist
 
-**Current version:** 0.1.0  
-**Overall progress:** Milestone 1 in tree; milestones 2–12 planned  
+**Current version:** 0.2.0  
+**Overall progress:** Milestones 1–2 in tree; milestones 3–12 planned  
 **Honest assessment:** Prefer [PROGRESS_REPORT.md](PROGRESS_REPORT.md). Public plan: [ROADMAP.md](../ROADMAP.md). Versions: [VERSIONING.md](../VERSIONING.md).
 
 **Product line:** Production (Apache 2.0) — single-host metrics daemon (not Prometheus, not a TSDB).
@@ -23,11 +23,11 @@
 
 ## Milestone 2 — Registry — v0.2.0
 
-**Status:** ⏳ Planned
+**Status:** ✅ Released (`v0.2.0`)
 
-- [ ] In-memory counter and gauge registry
-- [ ] Register and update metric values
-- [ ] `metricctl list` showing metrics
+- [x] In-memory counter and gauge registry
+- [x] Register and update metric values
+- [x] `metricctl list` showing metrics
 
 ---
 
