@@ -192,6 +192,7 @@ if(ENABLE_TESTS)
 
     add_metric_test(test_metric_config tests/unit/test_metric_config.cpp)
     add_metric_test(test_metric_registry tests/unit/test_metric_registry.cpp)
+    add_metric_test(test_metrics_http tests/unit/test_metrics_http.cpp)
 endif()
 
 if(ENABLE_PACKAGING)

@@ -25,8 +25,8 @@ void expect(bool cond, const char *msg) {
 
 void testRegisterAndList() {
   MetricRegistry registry;
-  MetricSpec up{"simple_metricd_up", "gauge", "daemon up", 1.0};
-  MetricSpec req{"requests_total", "counter", "requests", 0.0};
+  MetricSpec up{"simple_metricd_up", "gauge", "daemon up", 1.0, {}};
+  MetricSpec req{"requests_total", "counter", "requests", 0.0, {}};
   expect(registry.registerMetric(up), "register gauge");
   expect(registry.registerMetric(req), "register counter");
   expect(!registry.registerMetric(up), "reject duplicate name");
@@ -36,7 +36,7 @@ void testRegisterAndList() {
 
 void testCounterSemantics() {
   MetricRegistry registry;
-  MetricSpec req{"requests_total", "counter", "", 5.0};
+  MetricSpec req{"requests_total", "counter", "", 5.0, {}};
   expect(registry.registerMetric(req), "register counter at 5");
   expect(registry.find("requests_total")->value() == 5.0, "initial counter value");
   expect(registry.increment("requests_total", 2.0), "increment by 2");
@@ -49,7 +49,7 @@ void testCounterSemantics() {
 
 void testGaugeSemantics() {
   MetricRegistry registry;
-  MetricSpec temp{"temperature_celsius", "gauge", "", 20.0};
+  MetricSpec temp{"temperature_celsius", "gauge", "", 20.0, {}};
   expect(registry.registerMetric(temp), "register gauge");
   expect(registry.setValue("temperature_celsius", 18.5), "set gauge down");
   expect(std::abs(registry.find("temperature_celsius")->value() - 18.5) < 1e-9, "gauge is 18.5");
@@ -59,7 +59,7 @@ void testGaugeSemantics() {
 
 void testUnknownType() {
   MetricRegistry registry;
-  MetricSpec bad{"weird", "histogram", "", 0.0};
+  MetricSpec bad{"weird", "histogram", "", 0.0, {}};
   expect(!registry.registerMetric(bad), "reject unknown type");
   expect(registry.size() == 0, "empty after reject");
 }
