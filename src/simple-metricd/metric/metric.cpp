@@ -6,6 +6,8 @@
 
 #include <algorithm>
 #include <cctype>
+#include <cmath>
+#include <mutex>
 
 namespace simple_metricd {
 
@@ -17,17 +19,62 @@ std::string lowerCopy(std::string value) {
   return value;
 }
 
-class StubMetric : public Metric {
+class CounterMetric : public Metric {
 public:
-  explicit StubMetric(MetricSpec spec) : spec_(std::move(spec)) {}
+  explicit CounterMetric(MetricSpec spec)
+      : name_(std::move(spec.name)), help_(std::move(spec.help)),
+        value_(spec.value < 0.0 ? 0.0 : spec.value) {}
 
-  std::string name() const override { return spec_.name; }
-  MetricType type() const override { return parseMetricType(spec_.type); }
-  double value() const override { return spec_.value; }
-  bool setValue(double) override { return false; }
+  std::string name() const override { return name_; }
+  MetricType type() const override { return MetricType::Counter; }
+  double value() const override {
+    std::lock_guard<std::mutex> lock(mutex_);
+    return value_;
+  }
+  bool setValue(double value) override {
+    if (value < 0.0 || !std::isfinite(value)) {
+      return false;
+    }
+    std::lock_guard<std::mutex> lock(mutex_);
+    if (value < value_) {
+      return false;
+    }
+    value_ = value;
+    return true;
+  }
 
 private:
-  MetricSpec spec_;
+  std::string name_;
+  std::string help_;
+  mutable std::mutex mutex_;
+  double value_{0.0};
+};
+
+class GaugeMetric : public Metric {
+public:
+  explicit GaugeMetric(MetricSpec spec)
+      : name_(std::move(spec.name)), help_(std::move(spec.help)), value_(spec.value) {}
+
+  std::string name() const override { return name_; }
+  MetricType type() const override { return MetricType::Gauge; }
+  double value() const override {
+    std::lock_guard<std::mutex> lock(mutex_);
+    return value_;
+  }
+  bool setValue(double value) override {
+    if (!std::isfinite(value)) {
+      return false;
+    }
+    std::lock_guard<std::mutex> lock(mutex_);
+    value_ = value;
+    return true;
+  }
+
+private:
+  std::string name_;
+  std::string help_;
+  mutable std::mutex mutex_;
+  double value_{0.0};
 };
 
 }  // namespace
@@ -51,10 +98,14 @@ const char *toString(MetricType type) {
 }
 
 std::unique_ptr<Metric> makeMetric(const MetricSpec &spec) {
-  if (parseMetricType(spec.type) == MetricType::Unknown) {
+  switch (parseMetricType(spec.type)) {
+  case MetricType::Counter:
+    return std::make_unique<CounterMetric>(spec);
+  case MetricType::Gauge:
+    return std::make_unique<GaugeMetric>(spec);
+  default:
     return nullptr;
   }
-  return std::make_unique<StubMetric>(spec);
 }
 
 }  // namespace simple_metricd
