@@ -133,6 +133,63 @@ void testLiveScrapeMerge() {
   source.stop();
 }
 
+void testParallelFairScheduling() {
+  MetricConfig fast_cfg;
+  fast_cfg.listen_address = "127.0.0.1";
+  fast_cfg.listen_port = 0;
+  fast_cfg.metrics.push_back(MetricSpec{"fast_up", "gauge", "", 1.0, {}});
+  MetricDaemon fast(fast_cfg);
+  expect(fast.start(), "fast source starts");
+  if (!fast.running()) {
+    return;
+  }
+  const port_t fast_port = fast.boundPort();
+  std::this_thread::sleep_for(std::chrono::milliseconds(50));
+
+  MetricRegistry registry;
+  std::vector<ScrapeTarget> targets;
+
+  ScrapeTarget good;
+  good.host = "127.0.0.1";
+  good.port = fast_port;
+  good.path = "/metrics";
+  good.interval_sec = 1;
+  good.timeout_sec = 1;
+  targets.push_back(good);
+
+  // Blackhole port: concurrent timeout must not starve the good target.
+  ScrapeTarget slow;
+  slow.host = "127.0.0.1";
+  slow.port = 1;
+  slow.path = "/metrics";
+  slow.interval_sec = 1;
+  slow.timeout_sec = 2;
+  targets.push_back(slow);
+
+  ScrapeScheduler scheduler(targets, registry, /*worker_count=*/2);
+  expect(scheduler.start(), "parallel scheduler starts");
+  expect(scheduler.workerCount() == 2, "two workers");
+
+  bool got_fast = false;
+  std::uint64_t successes = 0;
+  for (int i = 0; i < 60; ++i) {
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    if (registry.find("fast_up")) {
+      got_fast = true;
+    }
+    successes = scheduler.successCount();
+    if (got_fast && successes >= 2) {
+      break;
+    }
+  }
+  expect(got_fast, "fast target scraped despite slow peer");
+  expect(successes >= 2, "fast target scraped more than once while slow times out");
+  expect(scheduler.failureCount() >= 1, "slow target recorded failures");
+
+  scheduler.stop();
+  fast.stop();
+}
+
 }  // namespace
 
 int main() {
@@ -140,6 +197,7 @@ int main() {
   testParseScrapeTarget();
   testParseAndMergePrometheus();
   testLiveScrapeMerge();
+  testParallelFairScheduling();
   if (g_failed != 0) {
     std::cout << g_failed << " scrape assertion(s) failed" << std::endl;
     return 1;
