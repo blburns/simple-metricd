@@ -28,14 +28,12 @@ bool MetricDaemon::initialize() {
   if (!config_.log_file.empty()) {
     Logger::instance().setLogFile(config_.log_file);
   }
-  metrics_.clear();
+  registry_.clear();
   for (const auto &spec : config_.metrics) {
-    auto metric = makeMetric(spec);
-    if (!metric) {
-      Logger::instance().error("unsupported metric type: " + spec.type + " (" + spec.name + ")");
+    if (!registry_.registerMetric(spec)) {
+      Logger::instance().error("failed to register metric: " + spec.name + " (" + spec.type + ")");
       return false;
     }
-    metrics_.push_back(std::move(metric));
   }
   initialized_ = true;
   return true;
@@ -47,8 +45,8 @@ bool MetricDaemon::start() {
   }
   running_ = true;
   Logger::instance().info(std::string(kProjectName) + " " + kVersion + " started");
-  Logger::instance().info("metrics configured: " + std::to_string(metrics_.size()));
-  Logger::instance().info("HTTP /metrics exposition is not implemented in v0.1.0");
+  Logger::instance().info("metrics registered: " + std::to_string(registry_.size()));
+  Logger::instance().info("HTTP /metrics exposition is not implemented until Milestone 3");
   return true;
 }
 

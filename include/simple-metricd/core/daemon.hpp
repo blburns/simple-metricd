@@ -6,9 +6,9 @@
 
 #include "simple-metricd/config/config.hpp"
 #include "simple-metricd/metric/metric.hpp"
+#include "simple-metricd/metric/registry.hpp"
 #include <atomic>
 #include <memory>
-#include <vector>
 
 namespace simple_metricd {
 
@@ -27,11 +27,12 @@ public:
   bool testConfig() const;
 
   const MetricConfig &config() const { return config_; }
-  const std::vector<std::unique_ptr<Metric>> &metrics() const { return metrics_; }
+  MetricRegistry &registry() { return registry_; }
+  const MetricRegistry &registry() const { return registry_; }
 
 private:
   MetricConfig config_;
-  std::vector<std::unique_ptr<Metric>> metrics_;
+  MetricRegistry registry_;
   std::atomic<bool> running_{false};
   std::atomic<bool> initialized_{false};
 };
