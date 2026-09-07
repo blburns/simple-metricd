@@ -2,11 +2,11 @@
 
 Lightweight Prometheus-style metrics daemon for SimpleDaemons hosts: expose and collect text metrics locally, scrape configured targets, accept push updates, and optionally forward upstream. Not a full TSDB or PromQL engine.
 
-**Current version:** 0.3.0 (Milestone 3 — Exposition)
+**Current version:** 0.4.0 (Milestone 4 — Metadata)
 
 ## Status
 
-Early development. v0.3.0 serves HTTP `/metrics`, `/healthz`, and `/status`, and `metricctl scrape` reads live exposition. TLS, pull scrape, push, and persistence arrive in later milestones. See [ROADMAP.md](ROADMAP.md) and [project/PROGRESS_REPORT.md](project/PROGRESS_REPORT.md).
+Early development. v0.4.0 exposes HELP/TYPE and label metadata for config-defined static metrics. TLS, pull scrape, push, and persistence arrive in later milestones. See [ROADMAP.md](ROADMAP.md) and [project/PROGRESS_REPORT.md](project/PROGRESS_REPORT.md).
 
 ## Quick start
 

@@ -1,7 +1,7 @@
 # simple-metricd — Roadmap Checklist
 
-**Current version:** 0.3.0  
-**Overall progress:** Milestones 1–3 in tree; milestones 4–12 planned  
+**Current version:** 0.4.0  
+**Overall progress:** Milestones 1–4 in tree; milestones 5–12 planned  
 **Honest assessment:** Prefer [PROGRESS_REPORT.md](PROGRESS_REPORT.md). Public plan: [ROADMAP.md](../ROADMAP.md). Versions: [VERSIONING.md](../VERSIONING.md).
 
 **Product line:** Production (Apache 2.0) — single-host metrics daemon (not Prometheus, not a TSDB).
@@ -43,11 +43,11 @@
 
 ## Milestone 4 — Metadata — v0.4.0
 
-**Status:** ⏳ Planned
+**Status:** ✅ Released (`v0.4.0`)
 
-- [ ] HELP and TYPE lines
-- [ ] Label sets on metric families
-- [ ] Config-defined static metrics
+- [x] HELP and TYPE lines
+- [x] Label sets on metric families
+- [x] Config-defined static metrics
 
 ---
 

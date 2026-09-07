@@ -1,7 +1,7 @@
 # Progress report
 
-**v0.3.0** completes Milestone 3 (Exposition): HTTP `/metrics` (Prometheus text 0.0.4), `/healthz` and thin `/status`, lab listen on 19100, and `metricctl scrape`. See [VERSIONING.md](../VERSIONING.md).
+**v0.4.0** completes Milestone 4 (Metadata): HELP/TYPE lines, label sets, and config-defined static metrics with `help=` / `labels=` / `value=`. See [VERSIONING.md](../VERSIONING.md).
 
-What works today: load/validate config; register counters/gauges; update values; list metrics; bind HTTP and scrape live exposition; foreground loop; `--version` / `--test-config`.
+What works today: registry; HTTP `/metrics` with HELP/TYPE/labels; `/healthz` `/status`; `metricctl list` / `scrape`; config static metrics.
 
-What does not work: config label parsing polish (Milestone 4), TLS, push, scrape scheduler, persistence, ACLs, privilege drop, `--daemon` fork, `stop` / `reload` subcommands.
+What does not work: TLS, pull scrape scheduler, push ingest, persistence, ACLs, privilege drop, `--daemon` fork.

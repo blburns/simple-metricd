@@ -6,7 +6,7 @@
 
 namespace simple_metricd {
 
-inline constexpr const char *kVersion = "0.3.0";
+inline constexpr const char *kVersion = "0.4.0";
 inline constexpr const char *kProjectName = "simple-metricd";
 inline constexpr const char *kDescription =
     "Simple Metrics Daemon - A lightweight Prometheus-style metrics daemon";

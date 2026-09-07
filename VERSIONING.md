@@ -11,7 +11,7 @@ Git tags and GitHub Releases use the `vMAJOR.MINOR.PATCH` form and point at the 
 | **0.1.0** | 1 — Skeleton | Build, packaging, CLI, config, metric stubs | Released (`v0.1.0`) |
 | **0.2.0** | 2 — Registry | In-memory counter/gauge registry | Released (`v0.2.0`) |
 | **0.3.0** | 3 — Exposition | HTTP `/metrics` (Prometheus text 0.0.4) | Released (`v0.3.0`) |
-| **0.4.0** | 4 — Metadata | HELP/TYPE, labels, static metrics | Planned |
+| **0.4.0** | 4 — Metadata | HELP/TYPE, labels, static metrics | Released (`v0.4.0`) |
 | **0.5.0** | 5 — TLS | HTTPS `/metrics` | Planned |
 | **0.6.0** | 6 — Pull scrape | Interval scrape of remote targets | Planned |
 | **0.7.0** | 7 — Push ingest | HTTP push for counter/gauge updates | Planned |

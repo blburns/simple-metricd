@@ -2,10 +2,10 @@
 
 | Field | Value |
 |-------|-------|
-| Product version | **0.3.0** |
-| Maturity | Early development — HTTP exposition complete |
-| Last milestone | 3 — Exposition |
-| Next milestone | 4 — Metadata (HELP/TYPE, labels) |
+| Product version | **0.4.0** |
+| Maturity | Early development — metadata complete |
+| Last milestone | 4 — Metadata |
+| Next milestone | 5 — TLS |
 | Primary docs | [PROGRESS_REPORT.md](PROGRESS_REPORT.md), [ROADMAP_CHECKLIST.md](ROADMAP_CHECKLIST.md) |
 
-Honesty: registry and `/metrics` exposition work; TLS and scrape scheduler are not started.
+Honesty: registry, `/metrics` with metadata, and scrape CLI work; TLS and scrape scheduler are not started.

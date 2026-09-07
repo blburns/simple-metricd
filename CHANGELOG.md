@@ -10,6 +10,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/) (see [VER
 ### Added
 - (none yet)
 
+## [0.4.0] — 2026-09-07
+
+### Added
+- Config `metric` lines accept `help=`, `labels=`, and `value=` tokens
+- Static metrics from config expose HELP/TYPE and label sets on `/metrics`
+
 ## [0.3.0] — 2026-09-07
 
 ### Added
