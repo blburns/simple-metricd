@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/) (see [VER
 
 ## [Unreleased]
 
+## [0.10.0] — 2026-09-07
+
+### Added
+- Parallel scrape worker pool with fair scheduling
+
 ### Added
 - (none yet)
 
