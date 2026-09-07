@@ -1,0 +1,13 @@
+# Histogram metrics with explicit bucket bounds.
+
+listen_address = 127.0.0.1
+listen_port = 19100
+log_level = info
+foreground = true
+
+metric = simple_metricd_up gauge help=daemon process up
+metric = http_request_duration_seconds histogram help=request latency buckets=0.005,0.01,0.025,0.05,0.1,0.25,0.5,1,2.5,5
+metric = db_query_duration_seconds histogram help=SQL query latency buckets=0.001,0.005,0.01,0.05,0.1,0.5,1
+
+# Observe bucket series on scrape:
+#   curl -s http://127.0.0.1:19100/metrics | grep http_request_duration

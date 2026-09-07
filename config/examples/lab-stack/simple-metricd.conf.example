@@ -1,0 +1,28 @@
+# Lab stack: aggregate peer SimpleDaemons expositions on one host.
+# Adjust ports to match your local healthd/httpd listeners.
+
+listen_address = 127.0.0.1
+listen_port = 19100
+log_level = debug
+foreground = true
+
+metric = simple_metricd_up gauge help=aggregator up labels=role="lab-hub"
+metric = lab_hosts_configured gauge value=2 help=expected scrape peers
+
+# simple-healthd status/metrics port (change if yours differs)
+scrape_target = 127.0.0.1:8080/metrics interval=20 timeout=5
+
+# simple-httpd metrics (if enabled on the daemon)
+# scrape_target = 127.0.0.1:80/metrics interval=30 timeout=5
+
+# Second metricd instance used as a feeder
+# scrape_target = 127.0.0.1:19101/metrics interval=15 timeout=5
+
+snapshot_file = /tmp/lab-metricd.snapshot
+snapshot_interval = 60
+
+# Prometheus can scrape this hub once instead of each peer:
+#   scrape_configs:
+#     - job_name: lab-hub
+#       static_configs:
+#         - targets: ["127.0.0.1:19100"]

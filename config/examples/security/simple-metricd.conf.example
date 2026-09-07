@@ -1,5 +1,26 @@
-# Example (security) — v0.1.0 skeleton
+# Security-focused example: IP ACL, optional basic auth, rate limit, TLS hooks.
+
 listen_address = 127.0.0.1
 listen_port = 19100
-log_level = info
+log_level = warning
+foreground = true
+run_as_user = simple-metricd
+rate_limit_per_minute = 120
+
+# Uncomment when ENABLE_SSL=ON and certs are installed:
+# tls_cert_file = /etc/simple-metricd/certs/server.crt
+# tls_key_file = /etc/simple-metricd/certs/server.key
+# tls_ca_file = /etc/simple-metricd/certs/ca.crt
+
+allow_ip = 127.0.0.1,::1,10.0.0.*
+deny_ip = 10.0.0.66
+# auth_user = metrics
+# auth_password = change-me
+public_healthz = true
+
 metric = simple_metricd_up gauge help=daemon process up
+
+# Clients:
+#   curl -s http://127.0.0.1:19100/healthz          # open when public_healthz=true
+#   curl -s -u metrics:change-me http://127.0.0.1:19100/metrics
+#   # Authorization: Basic metrics:change-me  (lab accepts user:pass after "Basic ")

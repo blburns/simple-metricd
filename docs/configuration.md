@@ -2,6 +2,11 @@
 
 Default listen port for labs is **19100**. Production templates may bind loopback or a management interface.
 
+Shipped files live under [`config/`](../config/README.md):
+
+- `config/templates/` — development / production / high-security defaults
+- `config/examples/` — usage samples (simple, labels, histograms, scrape, push-ingest, snapshot, lab-stack, security, production, advanced)
+
 ## Core
 
 | Key | Default | Notes |
@@ -15,7 +20,7 @@ Default listen port for labs is **19100**. Production templates may bind loopbac
 ## Metrics
 
 ```
-metric = NAME TYPE [VALUE] [help=...] [labels=k="v",...] [value=N]
+metric = NAME TYPE [VALUE] [help=...] [labels=k="v",...] [value=N] [buckets=...]
 ```
 
 Types: `counter`, `gauge`, `histogram` (with `buckets=`).
@@ -39,4 +44,28 @@ Types: `counter`, `gauge`, `histogram` (with `buckets=`).
 | `snapshot_file` | Registry snapshot path |
 | `snapshot_interval` | Seconds between saves |
 
-See `config/templates/` for development, production, and high-security examples.
+## Common recipes
+
+**Local scrape into Prometheus**
+
+```yaml
+scrape_configs:
+  - job_name: simple-metricd
+    static_configs:
+      - targets: ["127.0.0.1:19100"]
+```
+
+**Push a counter**
+
+```sh
+curl -s -X POST http://127.0.0.1:19100/ingest \
+  --data-binary $'app_requests_total counter 9\n'
+```
+
+**Aggregate node_exporter**
+
+```
+scrape_target = 127.0.0.1:9100/metrics interval=15 timeout=5
+```
+
+See `config/examples/` for full files.

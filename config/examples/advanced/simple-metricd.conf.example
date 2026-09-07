@@ -1,5 +1,25 @@
-# Example (advanced) — v0.1.0 skeleton
+# Advanced kitchen-sink: scrape + push + snapshot + labels + histogram + hardening.
+
 listen_address = 127.0.0.1
 listen_port = 19100
 log_level = info
-metric = simple_metricd_up gauge help=daemon process up
+log_file = /tmp/simple-metricd-advanced.log
+foreground = true
+rate_limit_per_minute = 240
+allow_ip = 127.0.0.1,::1
+public_healthz = true
+
+metric = simple_metricd_up gauge help=daemon process up labels=role="hub",instance="advanced"
+metric = pipeline_jobs_total counter value=0 help=jobs accepted labels=stage="ingest"
+metric = pipeline_inflight gauge value=0 help=jobs in flight labels=stage="worker"
+metric = pipeline_latency_seconds histogram help=end-to-end latency buckets=0.01,0.05,0.1,0.25,0.5,1,2,5
+
+scrape_target = 127.0.0.1:9100/metrics interval=20 timeout=5
+# scrape_target = 127.0.0.1:19101/metrics interval=15 timeout=5
+
+snapshot_file = /tmp/simple-metricd-advanced.snapshot
+snapshot_interval = 45
+
+# Push while scrapes run:
+#   curl -s -X POST http://127.0.0.1:19100/ingest \
+#     --data-binary $'pipeline_jobs_total counter 10\npipeline_inflight gauge 2\n'

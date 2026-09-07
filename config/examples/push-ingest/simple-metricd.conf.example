@@ -1,0 +1,22 @@
+# Accept push updates via POST /ingest (or /api/v1/import).
+
+listen_address = 127.0.0.1
+listen_port = 19100
+log_level = info
+foreground = true
+
+# Seed names so clients can update known series (upsert also creates on ingest).
+metric = demo_requests_total counter value=0 help=demo counter updated by push
+metric = demo_temperature_celsius gauge value=20 help=demo gauge updated by push
+
+# Push examples:
+#
+#   # name type value
+#   curl -s -X POST http://127.0.0.1:19100/ingest --data-binary \
+#     $'demo_requests_total counter 42\ndemo_temperature_celsius gauge 22.5\n'
+#
+#   # Prometheus sample lines
+#   curl -s -X POST http://127.0.0.1:19100/api/v1/import --data-binary \
+#     $'# TYPE batch_jobs_total counter\nbatch_jobs_total 7\n'
+#
+# Then: curl -s http://127.0.0.1:19100/metrics | grep demo_

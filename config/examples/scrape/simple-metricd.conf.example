@@ -1,0 +1,19 @@
+# Pull-scrape remote Prometheus text endpoints into the local registry.
+
+listen_address = 127.0.0.1
+listen_port = 19100
+log_level = info
+foreground = true
+
+metric = simple_metricd_up gauge help=daemon process up labels=role="aggregator"
+
+# node_exporter (or any /metrics):
+scrape_target = 127.0.0.1:9100/metrics interval=15 timeout=5
+
+# Another simple-metricd or healthd-style exposition:
+# scrape_target = 127.0.0.1:19101/metrics interval=30 timeout=5
+
+# Slow / remote target (longer timeout; parallel workers keep others fair):
+# scrape_target = 10.0.0.50:9100/metrics interval=60 timeout=20
+
+# After start, merged series appear on this daemon's /metrics.

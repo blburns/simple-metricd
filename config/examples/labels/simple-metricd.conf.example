@@ -1,0 +1,16 @@
+# Labels + HELP/TYPE metadata on static metrics.
+
+listen_address = 127.0.0.1
+listen_port = 19100
+log_level = info
+foreground = true
+
+metric = simple_metricd_up gauge help=daemon process up labels=instance="lab",job="simple-metricd"
+metric = app_requests_total counter value=0 help=HTTP requests handled labels=service="api",method="GET"
+metric = app_queue_depth gauge value=3 help=in-flight jobs labels=queue="default"
+metric = app_errors_total counter value=0 help=error responses labels=service="api",code="5xx"
+
+# Exposition looks like:
+#   # HELP app_requests_total HTTP requests handled
+#   # TYPE app_requests_total counter
+#   app_requests_total{service="api",method="GET"} 0

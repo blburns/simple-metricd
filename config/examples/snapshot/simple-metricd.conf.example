@@ -1,0 +1,17 @@
+# Persist registry values across restarts (file snapshot, not a TSDB).
+
+listen_address = 127.0.0.1
+listen_port = 19100
+log_level = info
+foreground = true
+
+metric = simple_metricd_up gauge help=daemon process up
+metric = durable_counter counter value=0 help=survives restart via snapshot
+
+snapshot_file = /tmp/simple-metricd.snapshot
+snapshot_interval = 30
+
+# Workflow:
+#   1) Start daemon, POST increments to /ingest
+#   2) Stop daemon (snapshot saved on stop + periodically)
+#   3) Start again — durable_counter restores from snapshot_file

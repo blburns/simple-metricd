@@ -1,5 +1,13 @@
-# Example (simple) — v0.1.0 skeleton
+# Minimal local exposition — copy to /etc/simple-metricd/simple-metricd.conf for a lab.
+
 listen_address = 127.0.0.1
 listen_port = 19100
 log_level = info
+foreground = true
+
 metric = simple_metricd_up gauge help=daemon process up
+
+# Try:
+#   simple-metricd --config this-file --foreground
+#   curl -s http://127.0.0.1:19100/metrics
+#   metricctl scrape --config this-file

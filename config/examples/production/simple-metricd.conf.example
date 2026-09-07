@@ -1,5 +1,25 @@
-# Example (production) — v0.1.0 skeleton
-listen_address = 127.0.0.1
+# Production-style host install (paths match packaging / systemd StateDirectory).
+
+listen_address = 0.0.0.0
 listen_port = 19100
 log_level = info
-metric = simple_metricd_up gauge help=daemon process up
+log_file = /var/log/simple-metricd/simple-metricd.log
+foreground = true
+run_as_user = simple-metricd
+rate_limit_per_minute = 300
+public_healthz = true
+
+# Prefer allow_ip on a management interface if this host is not firewalled.
+# allow_ip = 10.0.0.*,127.0.0.1
+
+metric = simple_metricd_up gauge help=daemon process up labels=job="simple-metricd",env="prod"
+metric = simple_metricd_info gauge value=1 help=build identity labels=version="1.0.0"
+
+# Scrape local exporters / peer daemons on the management network
+# scrape_target = 127.0.0.1:9100/metrics interval=30 timeout=5
+
+snapshot_file = /var/lib/simple-metricd/registry.snapshot
+snapshot_interval = 60
+
+# systemd:
+#   ExecStart=/usr/bin/simple-metricd --config /etc/simple-metricd/simple-metricd.conf --foreground
