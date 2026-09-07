@@ -15,10 +15,12 @@ StandardOutput=journal
 StandardError=journal
 SyslogIdentifier=simple-metricd
 
-# systemd creates these as simple-metricd:simple-metricd
+# systemd creates these as simple-metricd:simple-metricd under /var/lib and /var/log
 StateDirectory=simple-metricd
 LogsDirectory=simple-metricd
 ConfigurationDirectory=simple-metricd
+WorkingDirectory=/var/lib/simple-metricd
+ReadWritePaths=/var/lib/simple-metricd /var/log/simple-metricd
 
 NoNewPrivileges=true
 PrivateTmp=true
@@ -29,6 +31,8 @@ ProtectKernelModules=true
 ProtectControlGroups=true
 RestrictRealtime=true
 RestrictSUIDSGID=true
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+SystemCallArchitectures=native
 
 [Install]
 WantedBy=multi-user.target

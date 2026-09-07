@@ -80,21 +80,21 @@ After milestone **0.12.0**. **1.0.0** is a hygiene and contract cut on top of th
 
 ### Contract (write this into README / docs / CHANGELOG at tag time)
 
-- [ ] Counter/gauge registry; `/metrics` exposition; pull scrape; push ingest; optional persistence; `log_level`; metrics-API rate limit
-- [ ] One process, one host; run under systemd / launchd / a Windows service (`--daemon` does not fork)
-- [ ] Known limits that stay: no full TSDB; no PromQL; no long-term retention; no multi-node federation
-- [ ] Drop “early development” / “skeleton” language; refresh the `simple-metricd` blurb in SimpleDaemons `docs/FUTURE_DAEMONS.md`
+- [x] Counter/gauge registry; `/metrics` exposition; pull scrape; push ingest; optional persistence; `log_level`; metrics-API rate limit
+- [x] One process, one host; run under systemd / launchd / a Windows service (`--daemon` does not fork)
+- [x] Known limits that stay: no full TSDB; no PromQL; no long-term retention; no multi-node federation
+- [x] Drop “early development” / “skeleton” language; refresh the `simple-metricd` blurb in SimpleDaemons `docs/FUTURE_DAEMONS.md`
 
 ### Packaging (must match production templates)
 
-- [ ] Create `/var/lib/simple-metricd` and `/var/log/simple-metricd` (or platform equivalents) with the service user
-- [ ] systemd / launchd / Windows unit: `ExecStart` path and `--foreground --config` must match the installed binary and `/etc/simple-metricd/simple-metricd.conf`
+- [x] Create `/var/lib/simple-metricd` and `/var/log/simple-metricd` (or platform equivalents) with the service user
+- [x] systemd / launchd / Windows unit: `ExecStart` path and `--foreground --config` must match the installed binary and `/etc/simple-metricd/simple-metricd.conf`
 
 ### Optional polish (do not block 1.0 unless “safe on a public metrics port” is the bar)
 
-- [ ] Max concurrent outbound scrapes
+- [x] Max concurrent outbound scrapes
 - [ ] Idle timeout on the metrics listener
-- [ ] A CI workflow that builds and runs `ctest`
+- [x] A CI workflow that builds and runs `ctest`
 
 ### Do not pull into 1.0
 
