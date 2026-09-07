@@ -191,6 +191,7 @@ if(ENABLE_TESTS)
     endfunction()
 
     add_metric_test(test_metric_config tests/unit/test_metric_config.cpp)
+    add_metric_test(test_metric_registry tests/unit/test_metric_registry.cpp)
 endif()
 
 if(ENABLE_PACKAGING)
