@@ -6,6 +6,7 @@
 #include "simple-metricd/config/config.hpp"
 #include "simple-metricd/core/daemon.hpp"
 #include "simple-metricd/http/exposition.hpp"
+#include "simple-metricd/metric/metric.hpp"
 #include "simple-metricd/metric/registry.hpp"
 #include "simple-metricd/utils/net.hpp"
 
@@ -32,13 +33,21 @@ void testExpositionText() {
   MetricRegistry registry;
   MetricSpec up{"simple_metricd_up", "gauge", "daemon up", 1.0, {}};
   MetricSpec req{"requests_total", "counter", "requests", 3.0, "job=\"lab\""};
+  MetricSpec hist{"latency_seconds", "histogram", "latency", 0.0, {}, {0.5, 1.0}};
   expect(registry.registerMetric(up), "register gauge for exposition");
   expect(registry.registerMetric(req), "register counter for exposition");
+  expect(registry.registerMetric(hist), "register histogram for exposition");
+  dynamic_cast<HistogramMetric *>(registry.find("latency_seconds"))->observe(0.25);
+  dynamic_cast<HistogramMetric *>(registry.find("latency_seconds"))->observe(0.75);
   const std::string text = renderPrometheusText(registry, true);
   expect(text.find("# HELP simple_metricd_up daemon up") != std::string::npos, "HELP line");
   expect(text.find("# TYPE simple_metricd_up gauge") != std::string::npos, "TYPE line");
   expect(text.find("simple_metricd_up 1") != std::string::npos, "gauge sample");
   expect(text.find("requests_total{job=\"lab\"} 3") != std::string::npos, "labeled sample");
+  expect(text.find("# TYPE latency_seconds histogram") != std::string::npos, "histogram TYPE");
+  expect(text.find("latency_seconds_bucket{le=\"0.5\"} 1") != std::string::npos,
+         "histogram bucket");
+  expect(text.find("latency_seconds_count 2") != std::string::npos, "histogram count");
 }
 
 void testHttpSmoke() {

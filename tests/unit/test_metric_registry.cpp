@@ -5,6 +5,7 @@
 
 #include "simple-metricd/metric/registry.hpp"
 
+#include <chrono>
 #include <cmath>
 #include <iostream>
 
@@ -59,9 +60,31 @@ void testGaugeSemantics() {
 
 void testUnknownType() {
   MetricRegistry registry;
-  MetricSpec bad{"weird", "histogram", "", 0.0, {}};
+  MetricSpec bad{"weird", "flux", "", 0.0, {}};
   expect(!registry.registerMetric(bad), "reject unknown type");
   expect(registry.size() == 0, "empty after reject");
+}
+
+void testHistogramAndRate() {
+  MetricRegistry registry;
+  MetricSpec hist{"latency_seconds", "histogram", "request latency", 0.0, {}, {0.1, 0.5, 1.0}};
+  expect(registry.registerMetric(hist), "register histogram");
+  auto *metric = dynamic_cast<HistogramMetric *>(registry.find("latency_seconds"));
+  expect(metric != nullptr, "histogram type");
+  metric->observe(0.05);
+  metric->observe(0.4);
+  metric->observe(2.0);
+  expect(metric->count() == 3, "histogram count");
+  expect(std::abs(metric->sum() - 2.45) < 1e-9, "histogram sum");
+  const auto buckets = metric->bucketCounts();
+  expect(buckets.size() == 3 && buckets[0] == 1 && buckets[1] == 2 && buckets[2] == 2,
+         "cumulative buckets");
+
+  CounterRate rate;
+  const auto t0 = std::chrono::steady_clock::now();
+  expect(!rate.observe(10.0, t0).has_value(), "rate needs two samples");
+  const auto r = rate.observe(20.0, t0 + std::chrono::seconds(2));
+  expect(r.has_value() && std::abs(*r - 5.0) < 1e-9, "rate is 5/sec");
 }
 
 }  // namespace
@@ -71,6 +94,7 @@ int main() {
   testCounterSemantics();
   testGaugeSemantics();
   testUnknownType();
+  testHistogramAndRate();
   if (g_failed != 0) {
     std::cout << "Registry tests failed: " << g_failed << std::endl;
     return 1;

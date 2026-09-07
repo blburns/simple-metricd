@@ -71,7 +71,7 @@ bool parseMetricLine(const std::string &value, MetricSpec &spec, std::string &er
       std::size_t end = pos;
       while (end < rest.size()) {
         if (end > pos && std::isspace(static_cast<unsigned char>(rest[end - 1])) &&
-            (isKeyAt(end, "labels=") || isKeyAt(end, "value="))) {
+            (isKeyAt(end, "labels=") || isKeyAt(end, "value=") || isKeyAt(end, "buckets="))) {
           break;
         }
         ++end;
@@ -87,6 +87,38 @@ bool parseMetricLine(const std::string &value, MetricSpec &spec, std::string &er
         ++end;
       }
       spec.labels = rest.substr(pos, end - pos);
+      pos = end;
+      continue;
+    }
+    if (isKeyAt(pos, "buckets=")) {
+      pos += 8;
+      std::size_t end = pos;
+      while (end < rest.size() && !std::isspace(static_cast<unsigned char>(rest[end]))) {
+        ++end;
+      }
+      const std::string list = rest.substr(pos, end - pos);
+      spec.buckets.clear();
+      std::size_t start = 0;
+      while (start < list.size()) {
+        auto comma = list.find(',', start);
+        if (comma == std::string::npos) {
+          comma = list.size();
+        }
+        const std::string token = trim(list.substr(start, comma - start));
+        if (!token.empty()) {
+          try {
+            spec.buckets.push_back(std::stod(token));
+          } catch (...) {
+            error = "invalid buckets=";
+            return false;
+          }
+        }
+        start = comma + 1;
+      }
+      if (spec.buckets.empty()) {
+        error = "buckets= requires at least one bound";
+        return false;
+      }
       pos = end;
       continue;
     }
@@ -112,7 +144,7 @@ bool parseMetricLine(const std::string &value, MetricSpec &spec, std::string &er
     try {
       spec.value = std::stod(rest.substr(pos, end - pos));
     } catch (...) {
-      error = "metric trailing field must be a number or help=/labels=/value=";
+      error = "metric trailing field must be a number or help=/labels=/value=/buckets=";
       return false;
     }
     pos = end;

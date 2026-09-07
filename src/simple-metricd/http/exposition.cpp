@@ -17,6 +17,13 @@ std::string renderPrometheusText(const MetricRegistry &registry, bool include_me
             [](const Metric *a, const Metric *b) { return a->name() < b->name(); });
   std::ostringstream out;
   for (const Metric *metric : metrics) {
+    if (metric->type() == MetricType::Histogram) {
+      const auto *hist = dynamic_cast<const HistogramMetric *>(metric);
+      if (hist) {
+        hist->writeExposition(out, include_metadata);
+        continue;
+      }
+    }
     if (include_metadata) {
       const std::string help = metric->help();
       if (!help.empty()) {

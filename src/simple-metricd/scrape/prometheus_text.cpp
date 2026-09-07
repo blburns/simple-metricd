@@ -119,7 +119,7 @@ bool parsePrometheusText(const std::string &text, std::vector<MetricSpec> &out,
     } else {
       spec.type = "gauge";
     }
-    // Until histogram support lands, store unknown scraped types as gauges.
+    // Until full remote histogram reassembly, map unsupported scraped types to gauge.
     if (parseMetricType(spec.type) == MetricType::Unknown) {
       spec.type = "gauge";
     }
