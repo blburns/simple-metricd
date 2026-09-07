@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/) (see [VER
 
 ## [Unreleased]
 
+## [0.6.0] — 2026-09-07
+
+### Added
+- Pull scrape scheduler for remote /metrics targets
+
 ### Added
 - (none yet)
 
