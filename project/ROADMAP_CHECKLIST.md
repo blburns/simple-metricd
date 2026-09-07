@@ -1,7 +1,7 @@
 # simple-metricd — Roadmap Checklist
 
-**Current version:** 0.2.0  
-**Overall progress:** Milestones 1–2 in tree; milestones 3–12 planned  
+**Current version:** 0.3.0  
+**Overall progress:** Milestones 1–3 in tree; milestones 4–12 planned  
 **Honest assessment:** Prefer [PROGRESS_REPORT.md](PROGRESS_REPORT.md). Public plan: [ROADMAP.md](../ROADMAP.md). Versions: [VERSIONING.md](../VERSIONING.md).
 
 **Product line:** Production (Apache 2.0) — single-host metrics daemon (not Prometheus, not a TSDB).
@@ -33,11 +33,11 @@
 
 ## Milestone 3 — Exposition — v0.3.0
 
-**Status:** ⏳ Planned
+**Status:** ✅ Released (`v0.3.0`)
 
-- [ ] HTTP `/metrics` (Prometheus text 0.0.4)
-- [ ] Lab listen on 19100
-- [ ] `metricctl scrape` against a live daemon
+- [x] HTTP `/metrics` (Prometheus text 0.0.4)
+- [x] Lab listen on 19100
+- [x] `metricctl scrape` against a live daemon
 
 ---
 

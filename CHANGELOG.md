@@ -10,6 +10,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/) (see [VER
 ### Added
 - (none yet)
 
+## [0.3.0] — 2026-09-07
+
+### Added
+- TCP listener and HTTP metrics server on `listen_address`/`listen_port`
+- `GET /metrics` Prometheus text exposition (0.0.4) from the registry
+- `GET /healthz` and thin JSON `GET /status`
+- `metricctl scrape` to fetch live `/metrics` from a running daemon
+- HTTP smoke tests for exposition and endpoints
+
 ## [0.2.0] — 2026-09-07
 
 ### Added
