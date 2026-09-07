@@ -20,7 +20,7 @@ std::string writeTempConfig() {
   std::ofstream out(path);
   out << "listen_address = 127.0.0.1\n";
   out << "listen_port = 19100\n";
-  out << "metric = simple_metricd_up gauge help=daemon process up\n";
+  out << "metric = simple_metricd_up gauge help=daemon process up labels=job=\"lab\"\n";
   out << "metric = requests_total counter 0\n";
   return path;
 }
@@ -40,6 +40,8 @@ bool testFileLoad() {
   }
   return config.listen_port == 19100 && config.listen_address == "127.0.0.1" &&
          config.metrics.size() == 2 && config.metrics[0].name == "simple_metricd_up" &&
+         config.metrics[0].help == "daemon process up" &&
+         config.metrics[0].labels == "job=\"lab\"" &&
          config.metrics[1].type == "counter" && config.validate();
 }
 

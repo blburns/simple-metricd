@@ -34,21 +34,76 @@ bool parseMetricLine(const std::string &value, MetricSpec &spec, std::string &er
     error = "metric needs name and type";
     return false;
   }
+
   std::string rest;
   std::getline(in, rest);
   rest = trim(rest);
-  if (!rest.empty()) {
-    if (rest.rfind("help=", 0) == 0) {
-      spec.help = rest.substr(5);
-    } else {
+
+  auto isKeyAt = [&](std::size_t pos, const char *key) {
+    const std::size_t n = std::char_traits<char>::length(key);
+    return rest.compare(pos, n, key) == 0;
+  };
+
+  std::size_t pos = 0;
+  while (pos < rest.size()) {
+    while (pos < rest.size() && std::isspace(static_cast<unsigned char>(rest[pos]))) {
+      ++pos;
+    }
+    if (pos >= rest.size()) {
+      break;
+    }
+    if (isKeyAt(pos, "help=")) {
+      pos += 5;
+      std::size_t end = pos;
+      while (end < rest.size()) {
+        if (end > pos && std::isspace(static_cast<unsigned char>(rest[end - 1])) &&
+            (isKeyAt(end, "labels=") || isKeyAt(end, "value="))) {
+          break;
+        }
+        ++end;
+      }
+      spec.help = trim(rest.substr(pos, end - pos));
+      pos = end;
+      continue;
+    }
+    if (isKeyAt(pos, "labels=")) {
+      pos += 7;
+      std::size_t end = pos;
+      while (end < rest.size() && !std::isspace(static_cast<unsigned char>(rest[end]))) {
+        ++end;
+      }
+      spec.labels = rest.substr(pos, end - pos);
+      pos = end;
+      continue;
+    }
+    if (isKeyAt(pos, "value=")) {
+      pos += 6;
+      std::size_t end = pos;
+      while (end < rest.size() && !std::isspace(static_cast<unsigned char>(rest[end]))) {
+        ++end;
+      }
       try {
-        spec.value = std::stod(rest);
+        spec.value = std::stod(rest.substr(pos, end - pos));
       } catch (...) {
-        error = "metric trailing field must be a number or help=...";
+        error = "invalid value=";
         return false;
       }
+      pos = end;
+      continue;
     }
+    std::size_t end = pos;
+    while (end < rest.size() && !std::isspace(static_cast<unsigned char>(rest[end]))) {
+      ++end;
+    }
+    try {
+      spec.value = std::stod(rest.substr(pos, end - pos));
+    } catch (...) {
+      error = "metric trailing field must be a number or help=/labels=/value=";
+      return false;
+    }
+    pos = end;
   }
+
   if (spec.name.empty() || parseMetricType(spec.type) == MetricType::Unknown) {
     error = "unknown metric type: " + spec.type;
     return false;
