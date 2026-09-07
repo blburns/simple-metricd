@@ -43,4 +43,3 @@ Default lab listen port is **19100** (configured; exposition is milestone 3).
 ## License
 
 Apache-2.0. See [LICENSE](LICENSE).
-# simple-metricd
