@@ -6,6 +6,7 @@
 #include "simple-metricd/config/config.hpp"
 #include "simple-metricd/core/daemon.hpp"
 
+#include <algorithm>
 #include <iostream>
 
 int main(int argc, char *argv[]) {
@@ -36,18 +37,19 @@ int main(int argc, char *argv[]) {
     return daemon.testConfig() ? 0 : 1;
   }
   if (options.command == "list") {
-    if (!config.validate()) {
-      std::cerr << "invalid configuration" << std::endl;
+    simple_metricd::MetricDaemon daemon(config);
+    if (!daemon.initialize()) {
+      std::cerr << "failed to register metrics from configuration" << std::endl;
       return 1;
     }
-    for (const auto &metric : config.metrics) {
-      std::cout << metric.name << " " << metric.type;
-      if (!metric.help.empty()) {
-        std::cout << " help=" << metric.help;
-      } else if (metric.value != 0.0) {
-        std::cout << " " << metric.value;
-      }
-      std::cout << std::endl;
+    auto metrics = daemon.registry().list();
+    std::sort(metrics.begin(), metrics.end(),
+              [](const simple_metricd::Metric *a, const simple_metricd::Metric *b) {
+                return a->name() < b->name();
+              });
+    for (const auto *metric : metrics) {
+      std::cout << metric->name() << " " << simple_metricd::toString(metric->type()) << " "
+                << metric->value() << std::endl;
     }
     return 0;
   }
