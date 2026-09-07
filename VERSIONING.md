@@ -14,7 +14,7 @@ Git tags and GitHub Releases use the `vMAJOR.MINOR.PATCH` form and point at the 
 | **0.4.0** | 4 — Metadata | HELP/TYPE, labels, static metrics | Released (`v0.4.0`) |
 | **0.5.0** | 5 — TLS | HTTPS `/metrics` | Released (`v0.5.0`) |
 | **0.6.0** | 6 — Pull scrape | Interval scrape of remote targets | Planned |
-| **0.7.0** | 7 — Push ingest | HTTP push for counter/gauge updates | Planned |
+Released (`v0.7.0`) |
 | **0.8.0** | 8 — Persistence | SQLite/file snapshot (not TSDB) | Planned |
 | **0.9.0** | 9 — Aggregation | Rate/window stats; basic histograms | Planned |
 | **0.10.0** | 10 — Concurrency | Parallel scrape workers | Planned |
