@@ -13,13 +13,13 @@ Git tags and GitHub Releases use the `vMAJOR.MINOR.PATCH` form and point at the 
 | **0.3.0** | 3 — Exposition | HTTP `/metrics` (Prometheus text 0.0.4) | Released (`v0.3.0`) |
 | **0.4.0** | 4 — Metadata | HELP/TYPE, labels, static metrics | Released (`v0.4.0`) |
 | **0.5.0** | 5 — TLS | HTTPS `/metrics` | Released (`v0.5.0`) |
-| **0.6.0** | 6 — Pull scrape | Interval scrape of remote targets | Planned |
-| **0.7.0** | 7 — Push ingest | HTTP push for counter/gauge updates | Planned |
-| **0.8.0** | 8 — Persistence | SQLite/file snapshot (not TSDB) | Planned |
-| **0.9.0** | 9 — Aggregation | Rate/window stats; basic histograms | Planned |
+| **0.6.0** | 6 — Pull scrape | Interval scrape of remote targets | Released (`v0.6.0`) |
+| **0.7.0** | 7 — Push ingest | HTTP push for counter/gauge updates | Released (`v0.7.0`) |
+| **0.8.0** | 8 — Persistence | SQLite/file snapshot (not TSDB) | Released (`v0.8.0`) |
+| **0.9.0** | 9 — Aggregation | Rate/window stats; basic histograms | Released (`v0.9.0`) |
 Released (`v0.10.0`) |
 | **0.11.0** | 11 — Access control | Auth + IP allow/deny | Planned |
-| **0.12.0** | 12 — Hardening | log_level, rate limit, privilege drop | Planned |
+| **0.12.0** | 12 — Hardening | log_level, rate limit, privilege drop | Released (`v0.12.0`) |
 | **1.0.0** | Contract cut | Docs/packaging promise after 0.12.0 | Planned |
 
 ## Rules

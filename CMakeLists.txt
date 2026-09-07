@@ -6,7 +6,7 @@ cmake_minimum_required(VERSION 3.16)
 if(APPLE)
     set(CMAKE_OSX_DEPLOYMENT_TARGET "12.0" CACHE STRING "Minimum macOS version")
 endif()
-project(simple-metricd VERSION 0.10.0 LANGUAGES CXX)
+project(simple-metricd VERSION 0.12.0 LANGUAGES CXX)
 
 set(PROJECT_DESCRIPTION "Simple Metrics Daemon - A lightweight Prometheus-style metrics daemon")
 

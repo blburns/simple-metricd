@@ -1,8 +1,7 @@
 # Progress report
 
-**v0.5.0** completes Milestone 5 (TLS + early ACL): HTTPS metrics and access control. See [VERSIONING.md](../VERSIONING.md).
+**v0.12.0** completes Milestone 12 (Hardening): rate limit, privilege drop, SSL default on. ACL/TLS arrived in 0.5.0. See [VERSIONING.md](../VERSIONING.md).
 
-- Optional TLS certificate/key/CA for HTTPS /metrics
-- IP allow/deny lists and optional basic auth on the metrics API
-- High-security config template defaults for loopback ACL
+What works: registry, `/metrics`, scrape, push ingest, snapshots, histograms, parallel scrapes, TLS/ACL, rate limit, privilege drop.
 
+Remaining for 1.0.0: docs/packaging hygiene cut.
