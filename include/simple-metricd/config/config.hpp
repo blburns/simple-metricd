@@ -11,7 +11,16 @@
 
 namespace simple_metricd {
 
-struct MetricConfig {
+/** Remote Prometheus text scrape target. */
+struct ScrapeTarget {
+  std::string host;
+  port_t port{80};
+  std::string path{"/metrics"};
+  int interval_sec{15};
+  int timeout_sec{5};
+};
+
+class MetricConfig {
 public:
   MetricConfig();
 
@@ -26,6 +35,11 @@ public:
   bool foreground{true};
   std::vector<MetricSpec> metrics;
   std::vector<std::string> metric_errors;
+  std::vector<ScrapeTarget> scrape_targets;
+  std::vector<std::string> scrape_errors;
+  /** Optional registry snapshot path (load on start, save periodically/on stop). */
+  std::string snapshot_file;
+  int snapshot_interval_sec{60};
 
   // TLS (Milestone 5)
   std::string tls_cert_file;

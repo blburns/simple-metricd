@@ -4,6 +4,7 @@
 
 #include "simple-metricd/config/config.hpp"
 #include "simple-metricd/utils/logger.hpp"
+#include "simple-metricd/utils/net.hpp"
 
 #include <algorithm>
 #include <cctype>
@@ -124,6 +125,66 @@ bool parseMetricLine(const std::string &value, MetricSpec &spec, std::string &er
   return true;
 }
 
+bool parseScrapeTargetLine(const std::string &value, ScrapeTarget &target, std::string &error) {
+  std::istringstream in(value);
+  std::string endpoint;
+  if (!(in >> endpoint) || endpoint.empty()) {
+    error = "scrape_target needs host:port[/path]";
+    return false;
+  }
+
+  target = ScrapeTarget{};
+  std::string hostport = endpoint;
+  const auto slash = endpoint.find('/');
+  if (slash != std::string::npos) {
+    hostport = endpoint.substr(0, slash);
+    target.path = endpoint.substr(slash);
+    if (target.path.empty() || target.path[0] != '/') {
+      error = "scrape_target path must begin with /";
+      return false;
+    }
+  } else {
+    target.path = "/metrics";
+  }
+
+  if (!parseHostPort(hostport, target.host, target.port, 80) || target.host.empty()) {
+    error = "invalid scrape_target host:port";
+    return false;
+  }
+
+  std::string token;
+  while (in >> token) {
+    if (token.rfind("interval=", 0) == 0) {
+      try {
+        target.interval_sec = std::stoi(token.substr(9));
+      } catch (...) {
+        error = "invalid interval=";
+        return false;
+      }
+    } else if (token.rfind("timeout=", 0) == 0) {
+      try {
+        target.timeout_sec = std::stoi(token.substr(8));
+      } catch (...) {
+        error = "invalid timeout=";
+        return false;
+      }
+    } else {
+      error = "unknown scrape_target field: " + token;
+      return false;
+    }
+  }
+
+  if (target.interval_sec <= 0) {
+    error = "scrape_target interval must be > 0";
+    return false;
+  }
+  if (target.timeout_sec <= 0) {
+    error = "scrape_target timeout must be > 0";
+    return false;
+  }
+  return true;
+}
+
 }  // namespace
 
 MetricConfig::MetricConfig() = default;
@@ -183,6 +244,22 @@ bool MetricConfig::loadFromFile(const std::string &path) {
       } else {
         metrics.push_back(std::move(spec));
       }
+    } else if (key == "scrape_target") {
+      ScrapeTarget target;
+      std::string error;
+      if (!parseScrapeTargetLine(value, target, error)) {
+        scrape_errors.push_back(error.empty() ? "invalid scrape_target" : error);
+      } else {
+        scrape_targets.push_back(std::move(target));
+      }
+    } else if (key == "snapshot_file") {
+      snapshot_file = value;
+    } else if (key == "snapshot_interval") {
+      try {
+        snapshot_interval_sec = std::stoi(value);
+      } catch (...) {
+        scrape_errors.push_back("invalid snapshot_interval");
+      }
     }
   }
   return true;
@@ -204,6 +281,12 @@ bool MetricConfig::validateDetailed(std::vector<std::string> &errors) const {
   }
   for (const auto &error : metric_errors) {
     errors.push_back(error);
+  }
+  for (const auto &error : scrape_errors) {
+    errors.push_back(error);
+  }
+  if (snapshot_interval_sec <= 0 && !snapshot_file.empty()) {
+    errors.emplace_back("snapshot_interval must be > 0 when snapshot_file is set");
   }
   if (tls_cert_file.empty() != tls_key_file.empty()) {
     errors.emplace_back("tls_cert_file and tls_key_file must both be set");

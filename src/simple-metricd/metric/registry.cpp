@@ -25,6 +25,19 @@ bool MetricRegistry::registerMetric(const MetricSpec &spec) {
   return true;
 }
 
+bool MetricRegistry::upsert(const MetricSpec &spec) {
+  if (spec.name.empty()) {
+    return false;
+  }
+  auto metric = makeMetric(spec);
+  if (!metric) {
+    return false;
+  }
+  std::lock_guard<std::mutex> lock(mutex_);
+  metrics_[spec.name] = std::move(metric);
+  return true;
+}
+
 Metric *MetricRegistry::find(const std::string &name) {
   std::lock_guard<std::mutex> lock(mutex_);
   auto it = metrics_.find(name);

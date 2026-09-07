@@ -8,6 +8,7 @@
 #include "simple-metricd/http/metrics_server.hpp"
 #include "simple-metricd/metric/metric.hpp"
 #include "simple-metricd/metric/registry.hpp"
+#include "simple-metricd/scrape/scheduler.hpp"
 #include "simple-metricd/security/tls.hpp"
 #include <atomic>
 #include <memory>
@@ -31,6 +32,7 @@ public:
   const MetricConfig &config() const { return config_; }
   MetricRegistry &registry() { return registry_; }
   const MetricRegistry &registry() const { return registry_; }
+  ScrapeScheduler *scraper() { return scraper_.get(); }
   port_t boundPort() const;
 
 private:
@@ -38,6 +40,7 @@ private:
   MetricRegistry registry_;
   TlsContext tls_;
   std::unique_ptr<MetricsServer> server_;
+  std::unique_ptr<ScrapeScheduler> scraper_;
   std::atomic<bool> running_{false};
   std::atomic<bool> initialized_{false};
 };

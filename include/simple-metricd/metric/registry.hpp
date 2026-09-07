@@ -20,6 +20,12 @@ public:
   /** Register a metric from a config spec. Fails if name empty, type unknown, or duplicate. */
   bool registerMetric(const MetricSpec &spec);
 
+  /**
+   * Insert or replace a metric series (used by scrape/ingest).
+   * Unlike registerMetric, overwrites an existing name.
+   */
+  bool upsert(const MetricSpec &spec);
+
   /** Look up a registered metric by name (nullptr if missing). */
   Metric *find(const std::string &name);
   const Metric *find(const std::string &name) const;
@@ -35,6 +41,7 @@ public:
 
   std::size_t size() const;
   void clear();
+
 
 private:
   mutable std::mutex mutex_;

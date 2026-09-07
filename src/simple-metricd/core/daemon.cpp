@@ -75,22 +75,43 @@ bool MetricDaemon::start() {
     server_.reset();
     return false;
   }
+  if (!config_.scrape_targets.empty()) {
+    scraper_ = std::make_unique<ScrapeScheduler>(config_.scrape_targets, registry_);
+    if (!scraper_->start()) {
+      Logger::instance().error("failed to start scrape scheduler");
+      server_->stop();
+      server_.reset();
+      scraper_.reset();
+      return false;
+    }
+  }
   running_ = true;
   Logger::instance().info(std::string(kProjectName) + " " + kVersion + " started");
   Logger::instance().info("metrics registered: " + std::to_string(registry_.size()));
   Logger::instance().info(std::string("listening on ") + (tls_.enabled() ? "https://" : "http://") +
                           config_.listen_address + ":" + std::to_string(server_->boundPort()) +
                           " (/metrics /healthz /status)");
+  if (!config_.scrape_targets.empty()) {
+    Logger::instance().info("scrape targets: " + std::to_string(config_.scrape_targets.size()));
+  }
   return true;
 }
 
 void MetricDaemon::stop() {
   if (!running_.exchange(false)) {
+    if (scraper_) {
+      scraper_->stop();
+      scraper_.reset();
+    }
     if (server_) {
       server_->stop();
       server_.reset();
     }
     return;
+  }
+  if (scraper_) {
+    scraper_->stop();
+    scraper_.reset();
   }
   if (server_) {
     server_->stop();
