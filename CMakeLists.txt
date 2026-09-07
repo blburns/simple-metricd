@@ -196,6 +196,7 @@ if(ENABLE_TESTS)
     add_metric_test(test_acl tests/unit/test_acl.cpp)
     add_metric_test(test_scrape tests/unit/test_scrape.cpp)
     add_metric_test(test_ingest tests/unit/test_ingest.cpp)
+    add_metric_test(test_snapshot tests/unit/test_snapshot.cpp)
 endif()
 
 if(ENABLE_PACKAGING)

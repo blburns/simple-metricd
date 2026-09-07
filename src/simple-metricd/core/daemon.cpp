@@ -47,6 +47,15 @@ bool MetricDaemon::initialize() {
       return false;
     }
   }
+  if (!config_.snapshot_file.empty()) {
+    snapshot_ = std::make_unique<SnapshotStore>(config_.snapshot_file, registry_,
+                                                config_.snapshot_interval_sec);
+    if (!snapshot_->load()) {
+      Logger::instance().error("failed to load snapshot: " + config_.snapshot_file);
+      snapshot_.reset();
+      return false;
+    }
+  }
   initialized_ = true;
   return true;
 }
@@ -85,6 +94,16 @@ bool MetricDaemon::start() {
       return false;
     }
   }
+  if (snapshot_ && !snapshot_->start()) {
+    Logger::instance().error("failed to start snapshot store");
+    if (scraper_) {
+      scraper_->stop();
+      scraper_.reset();
+    }
+    server_->stop();
+    server_.reset();
+    return false;
+  }
   running_ = true;
   Logger::instance().info(std::string(kProjectName) + " " + kVersion + " started");
   Logger::instance().info("metrics registered: " + std::to_string(registry_.size()));
@@ -94,11 +113,17 @@ bool MetricDaemon::start() {
   if (!config_.scrape_targets.empty()) {
     Logger::instance().info("scrape targets: " + std::to_string(config_.scrape_targets.size()));
   }
+  if (!config_.snapshot_file.empty()) {
+    Logger::instance().info("snapshot file: " + config_.snapshot_file);
+  }
   return true;
 }
 
 void MetricDaemon::stop() {
   if (!running_.exchange(false)) {
+    if (snapshot_) {
+      snapshot_->stop();
+    }
     if (scraper_) {
       scraper_->stop();
       scraper_.reset();
@@ -108,6 +133,9 @@ void MetricDaemon::stop() {
       server_.reset();
     }
     return;
+  }
+  if (snapshot_) {
+    snapshot_->stop();
   }
   if (scraper_) {
     scraper_->stop();
