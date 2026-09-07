@@ -19,7 +19,9 @@ void printClientUsage() {
             << "  --config, -c FILE    Use specified configuration file\n"
             << "  --test-config        Validate configuration and exit\n\n"
             << "Commands:\n"
-            << "  list                 List configured metrics from a config file\n";
+            << "  list                 List configured metrics from a config file\n"
+            << "  scrape               GET /metrics from the configured listen address\n"
+            << "  test-config          Validate configuration and exit\n";
 }
 
 void printVersion() {

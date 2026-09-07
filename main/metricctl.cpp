@@ -5,6 +5,7 @@
 #include "simple-metricd/cli/common.hpp"
 #include "simple-metricd/config/config.hpp"
 #include "simple-metricd/core/daemon.hpp"
+#include "simple-metricd/utils/net.hpp"
 
 #include <algorithm>
 #include <iostream>
@@ -50,6 +51,33 @@ int main(int argc, char *argv[]) {
     for (const auto *metric : metrics) {
       std::cout << metric->name() << " " << simple_metricd::toString(metric->type()) << " "
                 << metric->value() << std::endl;
+    }
+    return 0;
+  }
+  if (options.command == "scrape") {
+    if (!simple_metricd::initializeSockets()) {
+      std::cerr << "failed to initialize sockets" << std::endl;
+      return 1;
+    }
+    std::string host = config.listen_address;
+    if (host == "0.0.0.0" || host == "::") {
+      host = "127.0.0.1";
+    }
+    const auto response =
+        simple_metricd::httpGet(host, config.listen_port, "/metrics", 5000);
+    if (response.status != 200) {
+      std::cerr << "scrape failed";
+      if (!response.error.empty()) {
+        std::cerr << ": " << response.error;
+      } else {
+        std::cerr << " (HTTP " << response.status << ")";
+      }
+      std::cerr << std::endl;
+      return 1;
+    }
+    std::cout << response.body;
+    if (!response.body.empty() && response.body.back() != '\n') {
+      std::cout << '\n';
     }
     return 0;
   }
