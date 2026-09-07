@@ -1,6 +1,6 @@
 # simple-metricd — Roadmap Checklist
 
-**Current version:** 0.4.0  
+**Current version:** 0.5.0  
 **Overall progress:** Milestones 1–4 in tree; milestones 5–12 planned  
 **Honest assessment:** Prefer [PROGRESS_REPORT.md](PROGRESS_REPORT.md). Public plan: [ROADMAP.md](../ROADMAP.md). Versions: [VERSIONING.md](../VERSIONING.md).
 

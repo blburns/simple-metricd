@@ -2,7 +2,7 @@
 
 | Field | Value |
 |-------|-------|
-| Product version | **0.4.0** |
+| Product version | **0.5.0** |
 | Maturity | Early development — metadata complete |
 | Last milestone | 4 — Metadata |
 | Next milestone | 5 — TLS |

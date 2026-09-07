@@ -2,7 +2,7 @@
 
 Lightweight Prometheus-style metrics daemon for SimpleDaemons hosts: expose and collect text metrics locally, scrape configured targets, accept push updates, and optionally forward upstream. Not a full TSDB or PromQL engine.
 
-**Current version:** 0.4.0 (Milestone 4 — Metadata)
+**Current version:** 0.5.0 (Milestone 4 — Metadata)
 
 ## Status
 
