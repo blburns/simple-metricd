@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/) (see [VER
 
 ## [Unreleased]
 
+## [0.8.0] — 2026-09-07
+
+### Added
+- File snapshot load/save for registry values
+
 ### Added
 - (none yet)
 
