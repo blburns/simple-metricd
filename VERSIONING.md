@@ -20,7 +20,7 @@ Git tags and GitHub Releases use the `vMAJOR.MINOR.PATCH` form and point at the 
 Released (`v0.10.0`) |
 | **0.11.0** | 11 — Access control | Auth + IP allow/deny | Planned |
 | **0.12.0** | 12 — Hardening | log_level, rate limit, privilege drop | Released (`v0.12.0`) |
-| **1.0.0** | Contract cut | Docs/packaging promise after 0.12.0 | Planned |
+| **1.0.0** | Contract cut | Docs/packaging promise after 0.12.0 | Released (`v1.0.0`) |
 
 ## Rules
 

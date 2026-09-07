@@ -1,7 +1,6 @@
 # Progress report
 
-**v0.12.0** completes Milestone 12 (Hardening): rate limit, privilege drop, SSL default on. ACL/TLS arrived in 0.5.0. See [VERSIONING.md](../VERSIONING.md).
+**v1.0.0** is the production-usable single-host metrics daemon cut after Milestone 12.
 
-What works: registry, `/metrics`, scrape, push ingest, snapshots, histograms, parallel scrapes, TLS/ACL, rate limit, privilege drop.
+Contract: counter/gauge/histogram registry; `/metrics` exposition; pull scrape; push ingest; optional snapshots; TLS/ACL; rate limit; privilege drop; foreground under OS supervisors. Not a TSDB; no PromQL; no federation.
 
-Remaining for 1.0.0: docs/packaging hygiene cut.
